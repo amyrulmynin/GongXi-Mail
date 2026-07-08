@@ -11,6 +11,14 @@ services:
         condition: service_healthy
     expose:
       - "3000"
+    networks:
+      - dokploy-network
+      - default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gongxi-mail.rule=Host(`gpt.themyrul.my.id`)"
+      - "traefik.http.routers.gongxi-mail.entrypoints=web"
+      - "traefik.http.services.gongxi-mail.loadbalancer.server.port=3000"
     environment:
       NODE_ENV: "production"
       PORT: "3000"
@@ -62,3 +70,7 @@ volumes:
   app_logs:
   redis_data:
   postgres_data:
+
+networks:
+  dokploy-network:
+    external: true
