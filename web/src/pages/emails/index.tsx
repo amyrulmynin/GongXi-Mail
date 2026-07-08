@@ -39,19 +39,19 @@ const { Title, Text } = Typography;
 const { TextArea } = Input;
 const { Dragger } = Upload;
 const MAIL_FETCH_STRATEGY_OPTIONS = [
-    { value: 'GRAPH_FIRST', label: 'Graph 优先（失败回退 IMAP）' },
-    { value: 'IMAP_FIRST', label: 'IMAP 优先（失败回退 Graph）' },
-    { value: 'GRAPH_ONLY', label: '仅 Graph' },
-    { value: 'IMAP_ONLY', label: '仅 IMAP' },
+    { value: 'GRAPH_FIRST', label: 'Graph first (fall back to IMAP)' },
+    { value: 'IMAP_FIRST', label: 'IMAP first (fall back to Graph)' },
+    { value: 'GRAPH_ONLY', label: 'Graph only' },
+    { value: 'IMAP_ONLY', label: 'IMAP only' },
 ] as const;
 
 type MailFetchStrategy = (typeof MAIL_FETCH_STRATEGY_OPTIONS)[number]['value'];
 
 const MAIL_FETCH_STRATEGY_LABELS: Record<MailFetchStrategy, string> = {
-    GRAPH_FIRST: 'Graph 优先',
-    IMAP_FIRST: 'IMAP 优先',
-    GRAPH_ONLY: '仅 Graph',
-    IMAP_ONLY: '仅 IMAP',
+    GRAPH_FIRST: 'Graph first',
+    IMAP_FIRST: 'IMAP first',
+    GRAPH_ONLY: 'Graph only',
+    IMAP_ONLY: 'IMAP only',
 };
 
 interface EmailGroup {
@@ -145,7 +145,7 @@ const EmailsPage: React.FC = () => {
     const fetchGroups = useCallback(async () => {
         const result = await requestData<EmailGroup[]>(
             () => groupApi.getList(),
-            '获取分组失败',
+            'Failed to fetch groups',
             { silent: true }
         );
         if (result) {
@@ -161,7 +161,7 @@ const EmailsPage: React.FC = () => {
 
         const result = await requestData<EmailListResult>(
             () => emailApi.getList(params),
-            '获取数据失败'
+            'Failed to fetch data'
         );
         if (currentRequestId !== latestListRequestIdRef.current) {
             return;
@@ -219,7 +219,7 @@ const EmailsPage: React.FC = () => {
                 });
             }
         } catch {
-            message.error('获取详情失败');
+            message.error('Failed to fetch details');
         } finally {
             setEmailEditLoading(false);
         }
@@ -229,27 +229,27 @@ const EmailsPage: React.FC = () => {
         try {
             const res = await emailApi.delete(id);
             if (res.code === 200) {
-                message.success('删除成功');
+                message.success('Deleted successfully');
                 fetchData();
                 fetchGroups();
             } else {
                 message.error(res.message);
             }
         } catch (err: unknown) {
-            message.error(getErrorMessage(err, '删除失败'));
+            message.error(getErrorMessage(err, 'Delete failed'));
         }
     }, [fetchData, fetchGroups]);
 
     const handleBatchDelete = async () => {
         if (selectedRowKeys.length === 0) {
-            message.warning('请选择要删除的邮箱');
+            message.warning('Please select emails to delete');
             return;
         }
 
         try {
             const res = await emailApi.batchDelete(selectedRowKeys as number[]);
             if (res.code === 200) {
-                message.success(`成功删除 ${res.data.deleted} 个邮箱`);
+                message.success(`Successfully deleted ${res.data.deleted} emails`);
                 setSelectedRowKeys([]);
                 fetchData();
                 fetchGroups();
@@ -257,7 +257,7 @@ const EmailsPage: React.FC = () => {
                 message.error(res.message);
             }
         } catch (err: unknown) {
-            message.error(getErrorMessage(err, '删除失败'));
+            message.error(getErrorMessage(err, 'Delete failed'));
         }
     };
 
@@ -274,7 +274,7 @@ const EmailsPage: React.FC = () => {
                 };
                 const res = await emailApi.update(editingId, submitData);
                 if (res.code === 200) {
-                    message.success('更新成功');
+                    message.success('Updated successfully');
                     setModalVisible(false);
                     fetchData();
                     fetchGroups();
@@ -288,7 +288,7 @@ const EmailsPage: React.FC = () => {
                 };
                 const res = await emailApi.create(submitData);
                 if (res.code === 200) {
-                    message.success('创建成功');
+                    message.success('Created successfully');
                     setModalVisible(false);
                     fetchData();
                     fetchGroups();
@@ -297,13 +297,13 @@ const EmailsPage: React.FC = () => {
                 }
             }
         } catch (err: unknown) {
-            message.error(getErrorMessage(err, '保存失败'));
+            message.error(getErrorMessage(err, 'Save failed'));
         }
     };
 
     const handleImport = async () => {
         if (!importContent.trim()) {
-            message.warning('请输入或粘贴邮箱数据');
+            message.warning('Please enter or paste email data');
             return;
         }
 
@@ -324,7 +324,7 @@ const EmailsPage: React.FC = () => {
                 message.error(res.message);
             }
         } catch (err: unknown) {
-            message.error(getErrorMessage(err, '导入失败'));
+            message.error(getErrorMessage(err, 'Import failed'));
         }
     };
 
@@ -334,7 +334,7 @@ const EmailsPage: React.FC = () => {
             const groupId = ids ? undefined : toOptionalNumber(filterGroupId);
             const res = await emailApi.export(ids, separator, groupId);
             if (res.code !== 200) {
-                message.error(res.message || '导出失败');
+                message.error(res.message || 'Export failed');
                 return;
             }
             const content = res.data?.content || '';
@@ -347,9 +347,9 @@ const EmailsPage: React.FC = () => {
             a.click();
             URL.revokeObjectURL(url);
 
-            message.success('导出成功');
+            message.success('Export successful');
         } catch (err: unknown) {
-            message.error(getErrorMessage(err, '导出失败'));
+            message.error(getErrorMessage(err, 'Export failed'));
         }
     };
 
@@ -357,13 +357,13 @@ const EmailsPage: React.FC = () => {
         setMailLoading(true);
         const result = await requestData<{ messages: MailItem[] }>(
             () => emailApi.viewMails(emailId, mailbox),
-            '获取邮件失败'
+            'Failed to fetch emails'
         );
         if (result) {
             setMailList(result.messages || []);
             fetchData();
             if (showSuccessToast) {
-                message.success('刷新成功');
+                message.success('Refreshed successfully');
             }
         }
         setMailLoading(false);
@@ -387,14 +387,14 @@ const EmailsPage: React.FC = () => {
         try {
             const res = await emailApi.clearMailbox(currentEmailId, currentMailbox);
             if (res.code === 200) {
-                message.success(`已清空 ${res.data?.deletedCount || 0} 封邮件`);
+                message.success(`Cleared ${res.data?.deletedCount || 0} emails`);
                 setMailList([]);
                 fetchData();
             } else {
-                message.error(res.message || '清空失败');
+                message.error(res.message || 'Clear failed');
             }
         } catch (err: unknown) {
-            message.error(getErrorMessage(err, '清空失败'));
+            message.error(getErrorMessage(err, 'Clear failed'));
         }
     };
 
@@ -406,13 +406,13 @@ const EmailsPage: React.FC = () => {
         try {
             const res = await emailApi.refreshSingleToken(record.id);
             if (res.code === 200 && res.data?.success) {
-                message.success(`${record.email} Token 刷新成功`);
+                message.success(`${record.email} Token refreshed`);
                 fetchData();
             } else {
-                message.error(res.data?.message || 'Token 刷新失败');
+                message.error(res.data?.message || 'Token refresh failed');
             }
         } catch (err: unknown) {
-            message.error(getErrorMessage(err, 'Token 刷新失败'));
+            message.error(getErrorMessage(err, 'Token refresh failed'));
         } finally {
             setRefreshingTokenIds(prev => {
                 const next = new Set(prev);
@@ -427,20 +427,20 @@ const EmailsPage: React.FC = () => {
         try {
             const res = await emailApi.refreshTokens(filterGroupId);
             if (res.code === 200) {
-                message.success('批量 Token 刷新任务已启动，请稍后刷新页面查看结果');
+                message.success('Batch token refresh started. Refresh the page later to see results');
             } else {
-                message.error(res.message || '启动失败');
+                message.error(res.message || 'Start failed');
             }
         } catch (err: unknown) {
-            message.error(getErrorMessage(err, '启动失败'));
+            message.error(getErrorMessage(err, 'Start failed'));
         } finally {
             setBatchRefreshing(false);
         }
     };
 
     const handleViewEmailDetail = (record: MailItem) => {
-        setEmailDetailSubject(record.subject || '无主题');
-        setEmailDetailContent(record.html || record.text || '无内容');
+        setEmailDetailSubject(record.subject || '(No subject)');
+        setEmailDetailContent(record.html || record.text || '(No content)');
         setEmailDetailVisible(true);
     };
 
@@ -468,12 +468,12 @@ const EmailsPage: React.FC = () => {
         try {
             const res = await groupApi.delete(id);
             if (res.code === 200) {
-                message.success('分组已删除');
+                message.success('Group deleted');
                 fetchGroups();
                 fetchData();
             }
         } catch (err: unknown) {
-            message.error(getErrorMessage(err, '删除失败'));
+            message.error(getErrorMessage(err, 'Delete failed'));
         }
     }, [fetchData, fetchGroups]);
 
@@ -483,36 +483,36 @@ const EmailsPage: React.FC = () => {
             if (editingGroupId) {
                 const res = await groupApi.update(editingGroupId, values);
                 if (res.code === 200) {
-                    message.success('分组已更新');
+                    message.success('Group updated');
                     setGroupModalVisible(false);
                     fetchGroups();
                 }
             } else {
                 const res = await groupApi.create(values);
                 if (res.code === 200) {
-                    message.success('分组已创建');
+                    message.success('Group created');
                     setGroupModalVisible(false);
                     fetchGroups();
                 }
             }
         } catch (err: unknown) {
-            message.error(getErrorMessage(err, '分组保存失败'));
+            message.error(getErrorMessage(err, 'Failed to save group'));
         }
     };
 
     const handleBatchAssignGroup = async () => {
         if (selectedRowKeys.length === 0) {
-            message.warning('请先选择邮箱');
+            message.warning('Please select emails first');
             return;
         }
         if (!assignTargetGroupId) {
-            message.warning('请选择目标分组');
+            message.warning('Please select a target group');
             return;
         }
         try {
             const res = await groupApi.assignEmails(assignTargetGroupId, selectedRowKeys as number[]);
             if (res.code === 200) {
-                message.success(`已将 ${res.data.count} 个邮箱分配到分组`);
+                message.success(`Assigned ${res.data.count} emails to group`);
                 setAssignGroupModalVisible(false);
                 setAssignTargetGroupId(undefined);
                 setSelectedRowKeys([]);
@@ -520,13 +520,13 @@ const EmailsPage: React.FC = () => {
                 fetchGroups();
             }
         } catch (err: unknown) {
-            message.error(getErrorMessage(err, '分配失败'));
+            message.error(getErrorMessage(err, 'Assign failed'));
         }
     };
 
     const handleBatchRemoveGroup = async () => {
         if (selectedRowKeys.length === 0) {
-            message.warning('请先选择邮箱');
+            message.warning('Please select emails first');
             return;
         }
         // Find the groupIds of selected emails, remove from each group
@@ -538,12 +538,12 @@ const EmailsPage: React.FC = () => {
                 const emailIds = selectedEmails.filter((e: EmailAccount) => e.groupId === gid).map((e: EmailAccount) => e.id);
                 await groupApi.removeEmails(gid, emailIds);
             }
-            message.success('已将选中邮箱移出分组');
+            message.success('Selected emails removed from group');
             setSelectedRowKeys([]);
             fetchData();
             fetchGroups();
         } catch (err: unknown) {
-            message.error(getErrorMessage(err, '移出失败'));
+            message.error(getErrorMessage(err, 'Remove failed'));
         }
     };
 
@@ -552,27 +552,27 @@ const EmailsPage: React.FC = () => {
     // ========================================
     const columns: ColumnsType<EmailAccount> = useMemo(() => [
         {
-            title: '邮箱',
+            title: 'Email',
             dataIndex: 'email',
             key: 'email',
             ellipsis: true,
         },
         {
-            title: '客户端 ID',
+            title: 'Client ID',
             dataIndex: 'clientId',
             key: 'clientId',
             ellipsis: true,
         },
         {
-            title: '分组',
+            title: 'Group',
             dataIndex: 'group',
             key: 'group',
             width: 120,
             render: (group: EmailAccount['group']) =>
-                group ? <Tag color="blue">{group.name}</Tag> : <Tag>未分组</Tag>,
+                group ? <Tag color="blue">{group.name}</Tag> : <Tag>Ungrouped</Tag>,
         },
         {
-            title: '状态',
+            title: 'Status',
             dataIndex: 'status',
             key: 'status',
             width: 100,
@@ -583,41 +583,41 @@ const EmailsPage: React.FC = () => {
                     DISABLED: 'default',
                 };
                 const labels: Record<string, string> = {
-                    ACTIVE: '正常',
-                    ERROR: '异常',
-                    DISABLED: '禁用',
+                    ACTIVE: 'Active',
+                    ERROR: 'Error',
+                    DISABLED: 'Disabled',
                 };
                 return <Tag color={colors[status]}>{labels[status]}</Tag>;
             },
         },
         {
-            title: '最后检查',
+            title: 'Last Check',
             dataIndex: 'lastCheckAt',
             key: 'lastCheckAt',
             width: 160,
             render: (val: string | null) => (val ? dayjs(val).format('YYYY-MM-DD HH:mm') : '-'),
         },
         {
-            title: 'Token 刷新',
+            title: 'Token Refreshed',
             dataIndex: 'tokenRefreshedAt',
             key: 'tokenRefreshedAt',
             width: 160,
             render: (val: string | null) => (val ? dayjs(val).format('YYYY-MM-DD HH:mm') : '-'),
         },
         {
-            title: '创建时间',
+            title: 'Created At',
             dataIndex: 'createdAt',
             key: 'createdAt',
             width: 160,
             render: (val: string) => dayjs(val).format('YYYY-MM-DD HH:mm'),
         },
         {
-            title: '操作',
+            title: 'Actions',
             key: 'action',
             width: 240,
             render: (_: unknown, record: EmailAccount) => (
                 <Space>
-                    <Tooltip title="刷新 Token">
+                    <Tooltip title="Refresh Token">
                         <Button
                             type="text"
                             icon={<SyncOutlined spin={refreshingTokenIds.has(record.id)} />}
@@ -625,30 +625,30 @@ const EmailsPage: React.FC = () => {
                             disabled={refreshingTokenIds.has(record.id) || record.status === 'DISABLED'}
                         />
                     </Tooltip>
-                    <Tooltip title="收件箱">
+                    <Tooltip title="Inbox">
                         <Button
                             type="text"
                             icon={<MailOutlined />}
                             onClick={() => handleViewMails(record, 'INBOX')}
                         />
                     </Tooltip>
-                    <Tooltip title="垃圾箱">
+                    <Tooltip title="Junk">
                         <Button
                             type="text"
                             icon={<DeleteOutlined style={{ color: '#faad14' }} />}
                             onClick={() => handleViewMails(record, 'Junk')}
                         />
                     </Tooltip>
-                    <Tooltip title="编辑">
+                    <Tooltip title="Edit">
                         <Button
                             type="text"
                             icon={<EditOutlined />}
                             onClick={() => handleEdit(record)}
                         />
                     </Tooltip>
-                    <Tooltip title="删除">
+                    <Tooltip title="Delete">
                         <Popconfirm
-                            title="确定要删除此邮箱吗？"
+                            title="Are you sure you want to delete this email?"
                             onConfirm={() => handleDelete(record.id)}
                         >
                             <Button type="text" danger icon={<DeleteOutlined />} />
@@ -673,7 +673,7 @@ const EmailsPage: React.FC = () => {
             pageSize,
             total,
             showSizeChanger: true,
-            showTotal: (count: number) => `共 ${count} 条`,
+            showTotal: (count: number) => `Total ${count} items`,
             onChange: (currentPage: number, currentPageSize: number) => {
                 setPage(currentPage);
                 setPageSize(currentPageSize);
@@ -731,39 +731,39 @@ const EmailsPage: React.FC = () => {
     // ========================================
     const groupColumns: ColumnsType<EmailGroup> = useMemo(() => [
         {
-            title: '分组名称',
+            title: 'Group Name',
             dataIndex: 'name',
             key: 'name',
             render: (name: string) => <Tag color="blue">{name}</Tag>,
         },
         {
-            title: '描述',
+            title: 'Description',
             dataIndex: 'description',
             key: 'description',
             render: (val: string | null) => val || '-',
         },
         {
-            title: '拉取策略',
+            title: 'Fetch Strategy',
             dataIndex: 'fetchStrategy',
             key: 'fetchStrategy',
             width: 190,
             render: (value: MailFetchStrategy) => <Tag color="purple">{MAIL_FETCH_STRATEGY_LABELS[value]}</Tag>,
         },
         {
-            title: '邮箱数',
+            title: 'Emails',
             dataIndex: 'emailCount',
             key: 'emailCount',
             width: 100,
         },
         {
-            title: '创建时间',
+            title: 'Created At',
             dataIndex: 'createdAt',
             key: 'createdAt',
             width: 180,
             render: (val: string) => dayjs(val).format('YYYY-MM-DD HH:mm'),
         },
         {
-            title: '操作',
+            title: 'Actions',
             key: 'action',
             width: 160,
             render: (_: unknown, record: EmailGroup) => (
@@ -774,7 +774,7 @@ const EmailsPage: React.FC = () => {
                         onClick={() => handleEditGroup(record)}
                     />
                     <Popconfirm
-                        title="删除分组后，组内邮箱将变为「未分组」。确认？"
+                        title="Deleting a group will make its emails ungrouped. Confirm?"
                         onConfirm={() => handleDeleteGroup(record.id)}
                     >
                         <Button type="text" danger icon={<DeleteOutlined />} />
@@ -789,7 +789,7 @@ const EmailsPage: React.FC = () => {
     // ========================================
     return (
         <div>
-            <Title level={4} style={{ margin: '0 0 16px' }}>邮箱管理</Title>
+            <Title level={4} style={{ margin: '0 0 16px' }}>Email Management</Title>
             <Tabs
                 defaultActiveKey="emails"
                 animated={false}
@@ -797,13 +797,13 @@ const EmailsPage: React.FC = () => {
                 items={[
                     {
                         key: 'emails',
-                        label: '邮箱列表',
+                        label: 'Email List',
                         children: (
                             <>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
                                     <Space wrap>
                                         <Input
-                                            placeholder="搜索邮箱"
+                                            placeholder="Search emails"
                                             prefix={<SearchOutlined />}
                                             value={keyword}
                                             onChange={(e) => setKeyword(e.target.value)}
@@ -811,7 +811,7 @@ const EmailsPage: React.FC = () => {
                                             allowClear
                                         />
                                         <Select
-                                            placeholder="按分组筛选"
+                                            placeholder="Filter by group"
                                             allowClear
                                             style={{ width: 160 }}
                                             value={filterGroupId}
@@ -828,32 +828,32 @@ const EmailsPage: React.FC = () => {
                                             onClick={handleBatchRefreshTokens}
                                             loading={batchRefreshing}
                                         >
-                                            刷新全部 Token
+                                            Refresh All Tokens
                                         </Button>
                                         <Button icon={<UploadOutlined />} onClick={() => setImportModalVisible(true)}>
-                                            导入
+                                            Import
                                         </Button>
                                         <Button icon={<DownloadOutlined />} onClick={handleExport}>
-                                            导出
+                                            Export
                                         </Button>
                                         {selectedRowKeys.length > 0 && (
                                             <>
                                                 <Button icon={<GroupOutlined />} onClick={() => setAssignGroupModalVisible(true)}>
-                                                    分配分组 ({selectedRowKeys.length})
+                                                    Assign to Group ({selectedRowKeys.length})
                                                 </Button>
                                                 <Button onClick={handleBatchRemoveGroup}>
-                                                    移出分组 ({selectedRowKeys.length})
+                                                    Remove from Group ({selectedRowKeys.length})
                                                 </Button>
                                                 <Popconfirm
-                                                    title={`确定要删除选中的 ${selectedRowKeys.length} 个邮箱吗？`}
+                                                    title={`Delete ${selectedRowKeys.length} selected emails?`}
                                                     onConfirm={handleBatchDelete}
                                                 >
-                                                    <Button danger>批量删除 ({selectedRowKeys.length})</Button>
+                                                    <Button danger>Batch Delete ({selectedRowKeys.length})</Button>
                                                 </Popconfirm>
                                             </>
                                         )}
                                         <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-                                            添加邮箱
+                                            Add Email
                                         </Button>
                                     </Space>
                                 </div>
@@ -873,12 +873,12 @@ const EmailsPage: React.FC = () => {
                     },
                     {
                         key: 'groups',
-                        label: '邮箱分组',
+                        label: 'Email Groups',
                         children: (
                             <>
                                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
                                     <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateGroup}>
-                                        创建分组
+                                        Create Group
                                     </Button>
                                 </div>
                                 <Table
@@ -893,9 +893,9 @@ const EmailsPage: React.FC = () => {
                 ]}
             />
 
-            {/* 添加/编辑邮箱 Modal */}
+            {/* Add/Edit Email Modal */}
             <Modal
-                title={editingId ? '编辑邮箱' : '添加邮箱'}
+                title={editingId ? 'Edit Email' : 'Add Email'}
                 open={modalVisible}
                 onOk={handleSubmit}
                 onCancel={() => setModalVisible(false)}
@@ -904,43 +904,43 @@ const EmailsPage: React.FC = () => {
             >
                 <Spin spinning={emailEditLoading}>
                     <Form form={form} layout="vertical">
-                    <Form.Item name="email" label="邮箱地址" rules={[{ required: true, message: '请输入邮箱地址' }, { type: 'email', message: '请输入有效的邮箱地址' }]}>
+                    <Form.Item name="email" label="Email Address" rules={[{ required: true, message: 'Please enter email address' }, { type: 'email', message: 'Please enter a valid email address' }]}>
                         <Input placeholder="example@outlook.com" />
                     </Form.Item>
-                    <Form.Item name="password" label="密码">
-                        <Input.Password placeholder="可选" />
+                    <Form.Item name="password" label="Password">
+                        <Input.Password placeholder="Optional" />
                     </Form.Item>
 
                     <Form.Item
                         name="clientId"
-                        label="客户端 ID"
-                        rules={[{ required: true, message: '请输入客户端 ID' }]}
+                        label="Client ID"
+                        rules={[{ required: true, message: 'Please enter client ID' }]}
                     >
-                        <Input placeholder="Azure AD 应用程序 ID" />
+                        <Input placeholder="Azure AD application ID" />
                     </Form.Item>
                     <Form.Item
                         name="refreshToken"
-                        label="刷新令牌"
-                        rules={[{ required: !editingId, message: '请输入刷新令牌' }]}
+                        label="Refresh Token"
+                        rules={[{ required: !editingId, message: 'Please enter refresh token' }]}
                     >
                         <TextArea rows={4} placeholder="OAuth2 Refresh Token" />
                     </Form.Item>
-                    <Form.Item name="groupId" label="所属分组">
-                        <Select placeholder="可选：选择分组" allowClear options={groupOptions} />
+                    <Form.Item name="groupId" label="Group">
+                        <Select placeholder="Optional: select group" allowClear options={groupOptions} />
                     </Form.Item>
-                    <Form.Item name="status" label="状态" initialValue="ACTIVE">
+                    <Form.Item name="status" label="Status" initialValue="ACTIVE">
                         <Select>
-                            <Select.Option value="ACTIVE">正常</Select.Option>
-                            <Select.Option value="DISABLED">禁用</Select.Option>
+                            <Select.Option value="ACTIVE">Active</Select.Option>
+                            <Select.Option value="DISABLED">Disabled</Select.Option>
                         </Select>
                     </Form.Item>
                     </Form>
                 </Spin>
             </Modal>
 
-            {/* 批量导入 Modal */}
+            {/* Batch Import Modal */}
             <Modal
-                title="批量导入邮箱"
+                title="Batch Import Emails"
                 open={importModalVisible}
                 onOk={handleImport}
                 onCancel={() => setImportModalVisible(false)}
@@ -950,19 +950,19 @@ const EmailsPage: React.FC = () => {
                 <Space direction="vertical" style={{ width: '100%' }} size="middle">
                     <div>
                         <Text type="secondary">
-                            上传文件或粘贴内容。支持多种格式，将尝试自动解析。
+                            Upload a file or paste content. Multiple formats are supported; auto-parsing will be attempted.
                             <br />
-                            推荐格式：邮箱{separator}密码{separator}客户端ID{separator}刷新令牌
+                            Recommended format: email{separator}password{separator}clientId{separator}refreshToken
                         </Text>
                     </div>
                     <Input
-                        addonBefore="分隔符"
+                        addonBefore="Separator"
                         value={separator}
                         onChange={(e) => setSeparator(e.target.value)}
                         style={{ width: 200 }}
                     />
                     <Select
-                        placeholder="导入到分组（可选）"
+                        placeholder="Import to group (optional)"
                         allowClear
                         value={importGroupId}
                         options={groupOptions}
@@ -985,7 +985,7 @@ const EmailsPage: React.FC = () => {
                                     });
 
                                     setImportContent(processedLines.join('\n'));
-                                    message.success(`文件读取成功，已解析 ${lines.length} 行数据`);
+                                    message.success(`File read successfully, parsed ${lines.length} lines`);
                                 }
                             };
                             reader.readAsText(file);
@@ -998,8 +998,8 @@ const EmailsPage: React.FC = () => {
                         <p className="ant-upload-drag-icon">
                             <InboxOutlined />
                         </p>
-                        <p className="ant-upload-text">点击或拖拽文件到此区域</p>
-                        <p className="ant-upload-hint">支持 .txt 或 .csv 文件</p>
+                        <p className="ant-upload-text">Click or drag file to this area</p>
+                        <p className="ant-upload-hint">Supports .txt or .csv files</p>
                     </Dragger>
                     <TextArea
                         rows={12}
@@ -1010,10 +1010,10 @@ const EmailsPage: React.FC = () => {
                 </Space>
             </Modal>
 
-            {/* 邮件列表 Modal */}
+            {/* Email List Modal */}
             {mailModalVisible && (
                 <Modal
-                    title={`${currentEmail} 的${currentMailbox === 'INBOX' ? '收件箱' : '垃圾箱'}`}
+                    title={`${currentMailbox === 'INBOX' ? 'Inbox' : 'Junk'} - ${currentEmail}`}
                     open={mailModalVisible}
                     onCancel={() => setMailModalVisible(false)}
                     footer={null}
@@ -1023,16 +1023,16 @@ const EmailsPage: React.FC = () => {
                 >
                     <Space style={{ marginBottom: 16 }}>
                         <Button type="primary" onClick={handleRefreshMails} loading={mailLoading}>
-                            收取新邮件
+                            Fetch New Emails
                         </Button>
                         <Popconfirm
-                            title={`确定要清空${currentMailbox === 'INBOX' ? '收件箱' : '垃圾箱'}的所有邮件吗？`}
+                            title={`Clear all emails in ${currentMailbox === 'INBOX' ? 'Inbox' : 'Junk'}?`}
                             onConfirm={handleClearMailbox}
                         >
-                            <Button danger>清空</Button>
+                            <Button danger>Clear</Button>
                         </Popconfirm>
                         <span style={{ marginLeft: 16, color: '#888' }}>
-                            共 {mailList.length} 封邮件
+                            {mailList.length} emails
                         </span>
                     </Space>
                     <List
@@ -1043,7 +1043,7 @@ const EmailsPage: React.FC = () => {
                             pageSize: 10,
                             showSizeChanger: true,
                             showQuickJumper: true,
-                            showTotal: (total: number) => `共 ${total} 条`,
+                            showTotal: (total: number) => `Total ${total} items`,
                             style: { marginTop: 16 },
                         }}
                         style={{ maxHeight: 450, overflow: 'auto' }}
@@ -1056,19 +1056,19 @@ const EmailsPage: React.FC = () => {
                                         size="small"
                                         onClick={() => handleViewEmailDetail(item)}
                                     >
-                                        查看
+                                        View
                                     </Button>,
                                 ]}
                             >
                                 <List.Item.Meta
                                     title={
                                         <Typography.Text ellipsis style={{ maxWidth: 600 }}>
-                                            {item.subject || '(无主题)'}
+                                            {item.subject || '(No subject)'}
                                         </Typography.Text>
                                     }
                                     description={
                                         <Space size="large">
-                                            <span style={{ color: '#1890ff' }}>{item.from || '未知发件人'}</span>
+                                            <span style={{ color: '#1890ff' }}>{item.from || 'Unknown sender'}</span>
                                             <span style={{ color: '#999' }}>
                                                 {item.date ? dayjs(item.date).format('YYYY-MM-DD HH:mm') : '-'}
                                             </span>
@@ -1081,7 +1081,7 @@ const EmailsPage: React.FC = () => {
                 </Modal>
             )}
 
-            {/* 邮件详情 Modal */}
+            {/* Email Detail Modal */}
             {emailDetailVisible && (
                 <Modal
                     title={emailDetailSubject}
@@ -1107,9 +1107,9 @@ const EmailsPage: React.FC = () => {
                 </Modal>
             )}
 
-            {/* 创建/编辑分组 Modal */}
+            {/* Create/Edit Group Modal */}
             <Modal
-                title={editingGroupId ? '编辑分组' : '创建分组'}
+                title={editingGroupId ? 'Edit Group' : 'Create Group'}
                 open={groupModalVisible}
                 onOk={handleGroupSubmit}
                 onCancel={() => setGroupModalVisible(false)}
@@ -1117,34 +1117,34 @@ const EmailsPage: React.FC = () => {
                 width={460}
             >
                 <Form form={groupForm} layout="vertical">
-                    <Form.Item name="name" label="分组名称" rules={[{ required: true, message: '请输入分组名称' }]}>
-                        <Input placeholder="例如：aws、discord" />
+                    <Form.Item name="name" label="Group Name" rules={[{ required: true, message: 'Please enter group name' }]}>
+                        <Input placeholder="e.g. aws, discord" />
                     </Form.Item>
-                    <Form.Item name="description" label="描述">
-                        <Input placeholder="可选描述" />
+                    <Form.Item name="description" label="Description">
+                        <Input placeholder="Optional description" />
                     </Form.Item>
                     <Form.Item
                         name="fetchStrategy"
-                        label="邮件拉取策略"
-                        rules={[{ required: true, message: '请选择拉取策略' }]}
+                        label="Mail Fetch Strategy"
+                        rules={[{ required: true, message: 'Please select a fetch strategy' }]}
                     >
                         <Select options={MAIL_FETCH_STRATEGY_OPTIONS.map((option) => ({ value: option.value, label: option.label }))} />
                     </Form.Item>
                 </Form>
             </Modal>
 
-            {/* 批量分配分组 Modal */}
+            {/* Batch Assign Group Modal */}
             <Modal
-                title="分配邮箱到分组"
+                title="Assign Emails to Group"
                 open={assignGroupModalVisible}
                 onOk={handleBatchAssignGroup}
                 onCancel={() => setAssignGroupModalVisible(false)}
                 destroyOnClose
                 width={400}
             >
-                <p>已选择 {selectedRowKeys.length} 个邮箱</p>
+                <p>{selectedRowKeys.length} emails selected</p>
                 <Select
-                    placeholder="选择目标分组"
+                    placeholder="Select target group"
                     style={{ width: '100%' }}
                     value={assignTargetGroupId}
                     options={groupOptions}

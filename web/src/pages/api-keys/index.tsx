@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     Table,
     Button,
@@ -147,7 +147,7 @@ const ApiKeysPage: React.FC = () => {
     const fetchGroups = useCallback(async () => {
         const result = await requestData<EmailGroup[]>(
             () => groupApi.getList(),
-            '获取分组失败',
+            'Failed to fetch groups',
             { silent: true }
         );
         if (result) {
@@ -158,7 +158,7 @@ const ApiKeysPage: React.FC = () => {
     const fetchAllEmailOptions = useCallback(async () => {
         const result = await requestData<{ list: EmailOptionItem[]; total: number }>(
             () => emailApi.getList<EmailOptionItem>({ page: 1, pageSize: 1000, status: 'ACTIVE' }),
-            '获取邮箱选项失败',
+            'Failed to fetch email options',
             { silent: true }
         );
         if (result) {
@@ -171,7 +171,7 @@ const ApiKeysPage: React.FC = () => {
         setLoading(true);
         const result = await requestData<ApiKeyListResult>(
             () => apiKeyApi.getList({ page, pageSize }),
-            '获取数据失败'
+            'Failed to fetch data'
         );
         if (currentRequestId !== latestListRequestIdRef.current) {
             return;
@@ -223,7 +223,7 @@ const ApiKeysPage: React.FC = () => {
         try {
             const detail = await requestData<ApiKeyDetail>(
                 () => apiKeyApi.getById(record.id),
-                '获取 API Key 详情失败'
+                'Failed to fetch API Key details'
             );
             if (detail) {
                 const selectedPermissions = detail.permissions
@@ -250,13 +250,13 @@ const ApiKeysPage: React.FC = () => {
         try {
             const res = await apiKeyApi.delete(id);
             if (res.code === 200) {
-                message.success('删除成功');
+                message.success('Deleted successfully');
                 fetchData();
             } else {
                 message.error(res.message);
             }
         } catch (err: unknown) {
-            message.error(getErrorMessage(err, '删除失败'));
+            message.error(getErrorMessage(err, 'Delete failed'));
         }
     }, [fetchData]);
 
@@ -287,7 +287,7 @@ const ApiKeysPage: React.FC = () => {
                 };
                 const res = await apiKeyApi.update(editingId, submitData);
                 if (res.code === 200) {
-                    message.success('更新成功');
+                    message.success('Updated successfully');
                     setModalVisible(false);
                     fetchData();
                 } else {
@@ -312,7 +312,7 @@ const ApiKeysPage: React.FC = () => {
                 }
             }
         } catch (err: unknown) {
-            message.error(getErrorMessage(err, '保存失败'));
+            message.error(getErrorMessage(err, 'Save failed'));
         }
     };
 
@@ -327,7 +327,7 @@ const ApiKeysPage: React.FC = () => {
                 setPoolStats(res.data);
             }
         } catch {
-            message.error('获取邮箱池数据失败');
+            message.error('Failed to fetch pool data');
         } finally {
             setPoolLoading(false);
         }
@@ -343,7 +343,7 @@ const ApiKeysPage: React.FC = () => {
                 setPoolStats(res.data);
             }
         } catch {
-            message.error('获取邮箱池数据失败');
+            message.error('Failed to fetch pool data');
         } finally {
             setPoolLoading(false);
         }
@@ -354,21 +354,21 @@ const ApiKeysPage: React.FC = () => {
         try {
             const res = await apiKeyApi.resetPool(currentApiKey.id, poolGroupName);
             if (res.code === 200) {
-                message.success('邮箱池已重置');
-                // 刷新统计
+                message.success('Email pool reset');
+                // Refresh stats
                 const statsRes = await apiKeyApi.getUsage(currentApiKey.id, poolGroupName);
                 if (statsRes.code === 200) {
                     setPoolStats(statsRes.data);
                 }
             } else {
-                message.error(res.message || '重置失败');
+                message.error(res.message || 'Reset failed');
             }
         } catch {
-            message.error('重置失败');
+            message.error('Reset failed');
         }
     };
 
-    // 打开邮箱管理弹窗
+    // Open email management modal
     const handleManageEmails = useCallback(async (record: ApiKey) => {
         setCurrentApiKey(record);
         setEmailGroupId(undefined);
@@ -383,7 +383,7 @@ const ApiKeysPage: React.FC = () => {
                 setEmailKeyword('');
             }
         } catch {
-            message.error('获取邮箱列表失败');
+            message.error('Failed to fetch email list');
         } finally {
             setEmailLoading(false);
         }
@@ -402,31 +402,31 @@ const ApiKeysPage: React.FC = () => {
                 setEmailKeyword('');
             }
         } catch {
-            message.error('获取邮箱列表失败');
+            message.error('Failed to fetch email list');
         } finally {
             setEmailLoading(false);
         }
     }, [currentApiKey, extractUsedEmailIds]);
 
-    // 保存邮箱选择
+    // Save email selection
     const handleSaveEmails = async () => {
         if (!currentApiKey) return;
         setSavingEmails(true);
         try {
             const res = await apiKeyApi.updatePoolEmails(currentApiKey.id, selectedEmails, emailGroupId);
             if (res.code === 200) {
-                message.success(`已保存，共 ${res.data.count} 个邮箱`);
+                message.success(`Saved, total ${res.data.count} emails`);
                 setEmailModalVisible(false);
-                // 刷新统计
+                // Refresh stats
                 const statsRes = await apiKeyApi.getUsage(currentApiKey.id);
                 if (statsRes.code === 200) {
                     setPoolStats(statsRes.data);
                 }
             } else {
-                message.error(res.message || '保存失败');
+                message.error(res.message || 'Save failed');
             }
         } catch {
-            message.error('保存失败');
+            message.error('Save failed');
         } finally {
             setSavingEmails(false);
         }
@@ -434,7 +434,7 @@ const ApiKeysPage: React.FC = () => {
 
     const columns: ColumnsType<ApiKey> = useMemo(() => [
         {
-            title: '名称',
+            title: 'Name',
             dataIndex: 'name',
             key: 'name',
             render: (name, record) => (
@@ -445,44 +445,44 @@ const ApiKeysPage: React.FC = () => {
             ),
         },
         {
-            title: 'Key 前缀',
+            title: 'Key Prefix',
             dataIndex: 'keyPrefix',
             key: 'keyPrefix',
             width: 120,
             render: (text) => <Text code>{text}...</Text>,
         },
         {
-            title: '速率限制',
+            title: 'Rate Limit',
             dataIndex: 'rateLimit',
             key: 'rateLimit',
             width: 100,
-            render: (val) => <Tag color="blue">{val}/分钟</Tag>,
+            render: (val) => <Tag color="blue">{val}/min</Tag>,
         },
         {
-            title: '状态',
+            title: 'Status',
             dataIndex: 'status',
             key: 'status',
             width: 80,
             render: (status) => (
                 <Tag color={status === 'ACTIVE' ? 'green' : 'red'}>
-                    {status === 'ACTIVE' ? '启用' : '禁用'}
+                    {status === 'ACTIVE' ? 'Active' : 'Disabled'}
                 </Tag>
             ),
         },
         {
-            title: '使用次数',
+            title: 'Usage Count',
             dataIndex: 'usageCount',
             key: 'usageCount',
             width: 100,
             render: (val) => <Text type="secondary">{val?.toLocaleString() || 0}</Text>,
         },
         {
-            title: '过期时间',
+            title: 'Expires At',
             dataIndex: 'expiresAt',
             key: 'expiresAt',
             width: 120,
             render: (val) => {
-                if (!val) return <Text type="secondary">永不过期</Text>;
+                if (!val) return <Text type="secondary">Never expires</Text>;
                 const isExpired = dayjs(val).isBefore(dayjs());
                 return (
                     <Text type={isExpired ? 'danger' : undefined}>
@@ -492,42 +492,42 @@ const ApiKeysPage: React.FC = () => {
             },
         },
         {
-            title: '最后使用',
+            title: 'Last Used',
             dataIndex: 'lastUsedAt',
             key: 'lastUsedAt',
             width: 140,
-            render: (val) => val ? dayjs(val).format('MM-DD HH:mm') : <Text type="secondary">从未使用</Text>,
+            render: (val) => val ? dayjs(val).format('MM-DD HH:mm') : <Text type="secondary">Never used</Text>,
         },
         {
-            title: '操作',
+            title: 'Actions',
             key: 'action',
             width: 180,
             render: (_, record) => (
                 <Space size="small">
-                    <Tooltip title="邮箱池">
+                    <Tooltip title="Email Pool">
                         <Button
                             type="text"
                             icon={<DatabaseOutlined />}
                             onClick={() => handleViewPool(record)}
                         />
                     </Tooltip>
-                    <Tooltip title="管理邮箱">
+                    <Tooltip title="Manage Emails">
                         <Button
                             type="text"
                             icon={<ThunderboltOutlined />}
                             onClick={() => handleManageEmails(record)}
                         />
                     </Tooltip>
-                    <Tooltip title="编辑">
+                    <Tooltip title="Edit">
                         <Button
                             type="text"
                             icon={<EditOutlined />}
                             onClick={() => handleEdit(record)}
                         />
                     </Tooltip>
-                    <Tooltip title="删除">
+                    <Tooltip title="Delete">
                         <Popconfirm
-                            title="确定要删除此 API Key 吗？"
+                            title="Delete this API Key?"
                             onConfirm={() => handleDelete(record.id)}
                         >
                             <Button type="text" danger icon={<DeleteOutlined />} />
@@ -545,7 +545,7 @@ const ApiKeysPage: React.FC = () => {
             total,
             showSizeChanger: true,
             showQuickJumper: true,
-            showTotal: (count: number) => `共 ${count} 条`,
+            showTotal: (count: number) => `Total ${count} items`,
             onChange: (currentPage: number, currentPageSize: number) => {
                 setPage(currentPage);
                 setPageSize(currentPageSize);
@@ -650,14 +650,14 @@ const ApiKeysPage: React.FC = () => {
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
                 <Title level={4} style={{ margin: 0 }}>
-                    API Key 管理
+                    API Key Management
                 </Title>
                 <Space>
                     <Button icon={<ReloadOutlined />} onClick={fetchData}>
-                        刷新
+                        Refresh
                     </Button>
                     <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-                        创建 API Key
+                        Create API Key
                     </Button>
                 </Space>
             </div>
@@ -672,9 +672,9 @@ const ApiKeysPage: React.FC = () => {
                 scroll={{ y: 560, x: 1200 }}
             />
 
-            {/* 创建/编辑弹窗 */}
+            {/* Create/Edit Modal */}
             <Modal
-                title={editingId ? '编辑 API Key' : '创建 API Key'}
+                title={editingId ? 'Edit API Key' : 'Create API Key'}
                 open={modalVisible}
                 onOk={handleSubmit}
                 onCancel={() => {
@@ -688,43 +688,43 @@ const ApiKeysPage: React.FC = () => {
                 <Form form={form} layout="vertical">
                     <Form.Item
                         name="name"
-                        label="名称"
-                        rules={[{ required: true, message: '请输入名称' }]}
+                        label="Name"
+                        rules={[{ required: true, message: 'Please enter name' }]}
                     >
-                        <Input placeholder="例如：生产环境、测试环境" />
+                        <Input placeholder="e.g. Production, Staging" />
                     </Form.Item>
                     <Form.Item
                         name="rateLimit"
-                        label="速率限制（每分钟请求数）"
+                        label="Rate Limit (requests/min)"
                         initialValue={60}
                     >
                         <InputNumber min={1} max={10000} style={{ width: '100%' }} />
                     </Form.Item>
                     <Form.Item
                         name="expiresAt"
-                        label="过期时间（可选）"
+                        label="Expires At (optional)"
                     >
                         <DatePicker
                             style={{ width: '100%' }}
-                            placeholder="不设置则永不过期"
+                            placeholder="Leave empty for no expiry"
                             disabledDate={(current) => current && current < dayjs().startOf('day')}
                         />
                     </Form.Item>
                     {editingId && (
                         <Form.Item
                             name="status"
-                            label="状态"
+                            label="Status"
                         >
                             <Select>
-                                <Select.Option value="ACTIVE">启用</Select.Option>
-                                <Select.Option value="DISABLED">禁用</Select.Option>
+                                <Select.Option value="ACTIVE">Active</Select.Option>
+                                <Select.Option value="DISABLED">Disabled</Select.Option>
                             </Select>
                         </Form.Item>
                     )}
                     <Form.Item
                         name="permissions"
-                        label="可调用接口权限"
-                        rules={[{ required: true, type: 'array', min: 1, message: '至少选择一个权限' }]}
+                        label="Endpoint Permissions"
+                        rules={[{ required: true, type: 'array', min: 1, message: 'Select at least one permission' }]}
                     >
                         <Checkbox.Group
                             options={permissionActionOptions}
@@ -733,22 +733,22 @@ const ApiKeysPage: React.FC = () => {
                     </Form.Item>
                     <Form.Item
                         name="allowedGroupIds"
-                        label="可用分组（可选）"
-                        tooltip="不选择表示不限制分组"
+                        label="Allowed Groups (optional)"
+                        tooltip="Leave empty to allow all groups"
                     >
                         <Select
                             mode="multiple"
                             allowClear
-                            placeholder="默认：全部分组"
+                            placeholder="Default: all groups"
                             options={emailGroupOptions}
                             optionFilterProp="label"
                             maxTagCount="responsive"
-                            notFoundContent="暂无分组，留空表示全部邮箱"
+                            notFoundContent="No groups found, leave empty for all"
                         />
                     </Form.Item>
                     <Form.Item
-                        label="可用邮箱（可选）"
-                        tooltip="不选择表示使用分组范围内全部邮箱"
+                        label="Allowed Emails (optional)"
+                        tooltip="Leave empty to use all emails in scope"
                     >
                         <Space direction="vertical" size={12} style={{ width: '100%' }}>
                             <Input
@@ -756,7 +756,7 @@ const ApiKeysPage: React.FC = () => {
                                 value={allowedEmailKeyword}
                                 onChange={(event) => setAllowedEmailKeyword(event.target.value)}
                                 prefix={<SearchOutlined />}
-                                placeholder="搜索邮箱或分组"
+                                placeholder="Search emails or groups"
                             />
                             <Space wrap size={[8, 8]}>
                                 <Button
@@ -768,7 +768,7 @@ const ApiKeysPage: React.FC = () => {
                                         form.setFieldValue('allowedEmailIds', Array.from(merged));
                                     }}
                                 >
-                                    全选当前结果
+                                    Select all
                                 </Button>
                                 <Button
                                     size="small"
@@ -780,14 +780,14 @@ const ApiKeysPage: React.FC = () => {
                                         );
                                     }}
                                 >
-                                    清空当前结果
+                                    Clear all
                                 </Button>
                                 <Text type="secondary">
-                                    当前可选邮箱：{scopedAllowedEmails.length}
+                                    Available emails: {scopedAllowedEmails.length}
                                 </Text>
                                 <Text type="secondary">
-                                    已选择 {selectedAllowedEmailIds?.length || 0}
-                                    {`（当前结果 ${selectedAllowedInFilteredCount} / ${filteredAllowedEmails.length}）`}
+                                    Selected {selectedAllowedEmailIds?.length || 0}
+                                    {`（Current results ${selectedAllowedInFilteredCount} / ${filteredAllowedEmails.length}）`}
                                 </Text>
                             </Space>
                             <Form.Item name="allowedEmailIds" noStyle>
@@ -810,7 +810,7 @@ const ApiKeysPage: React.FC = () => {
                                                             <Space size={8} wrap>
                                                                 <span>{item.email}</span>
                                                                 <Tag color={item.group ? 'blue' : 'default'}>
-                                                                    {item.group?.name || '未分组'}
+                                                                    {item.group?.name || 'Ungrouped'}
                                                                 </Tag>
                                                             </Space>
                                                         </Checkbox>
@@ -822,10 +822,10 @@ const ApiKeysPage: React.FC = () => {
                                                 image={Empty.PRESENTED_IMAGE_SIMPLE}
                                                 description={
                                                     hasAllowedGroupFilter
-                                                        ? '所选分组下暂无启用邮箱'
+                                                        ? 'No active emails in selected group'
                                                         : allowedEmailKeyword.trim()
-                                                            ? '没有匹配的邮箱'
-                                                            : '暂无启用邮箱'
+                                                            ? 'No matching emails'
+                                                            : 'No active emails'
                                                 }
                                             />
                                         )}
@@ -833,7 +833,7 @@ const ApiKeysPage: React.FC = () => {
                                 </Checkbox.Group>
                             </Form.Item>
                             <Text type="secondary">
-                                留空表示使用{hasAllowedGroupFilter ? '所选分组' : '全部分组'}范围内全部邮箱
+                                Leave empty to use {hasAllowedGroupFilter ? 'selected group' : 'all groups'} all emails in scope
                             </Text>
                         </Space>
                     </Form.Item>
@@ -841,27 +841,27 @@ const ApiKeysPage: React.FC = () => {
                 </Spin>
             </Modal>
 
-            {/* 新建 Key 显示弹窗 */}
+            {/* New Key Display Modal */}
             <Modal
-                title="API Key 已创建"
+                title="API Key Created"
                 open={newKeyModalVisible}
                 onOk={() => setNewKeyModalVisible(false)}
                 onCancel={() => setNewKeyModalVisible(false)}
                 destroyOnClose
                 footer={[
                     <Button key="close" onClick={() => setNewKeyModalVisible(false)}>
-                        关闭
+                        Close
                     </Button>,
                 ]}
             >
                 <Card>
                     <Text type="warning" style={{ display: 'block', marginBottom: 16 }}>
-                        ⚠️ 请立即复制并妥善保存此 API Key，它不会再次显示！
+                        ⚠️ Please copy and save this API Key now. It will not be shown again!
                     </Text>
                     <Paragraph
                         copyable={{
                             text: newKey,
-                            onCopy: () => message.success('已复制'),
+                            onCopy: () => message.success('Copied'),
                         }}
                         code
                         style={{
@@ -876,13 +876,13 @@ const ApiKeysPage: React.FC = () => {
                 </Card>
             </Modal>
 
-            {/* 邮箱池弹窗 */}
+            {/* Email Pool Modal */}
             {poolModalVisible && (
                 <Modal
                     title={
                         <Space>
                             <DatabaseOutlined />
-                            <span>邮箱池管理 - {currentApiKey?.name}</span>
+                            <span>Email Pool - {currentApiKey?.name}</span>
                         </Space>
                     }
                     open={poolModalVisible}
@@ -892,14 +892,14 @@ const ApiKeysPage: React.FC = () => {
                     width={500}
                 >
                     {poolLoading ? (
-                        <div style={{ textAlign: 'center', padding: 40 }}>加载中...</div>
+                        <div style={{ textAlign: 'center', padding: 40 }}>Loading...</div>
                     ) : poolStats ? (
                         <div>
                             <div style={{ marginBottom: 16 }}>
-                                <Text type="secondary" style={{ marginRight: 8 }}>按分组筛选：</Text>
+                                <Text type="secondary" style={{ marginRight: 8 }}>Filter by group: </Text>
                                 <Select
                                     allowClear
-                                    placeholder="全部分组"
+                                    placeholder="all groups"
                                     style={{ width: 200 }}
                                     value={poolGroupName}
                                     options={poolGroupOptions}
@@ -910,7 +910,7 @@ const ApiKeysPage: React.FC = () => {
                                 <Col span={8}>
                                     <div className="stat-blue">
                                         <Statistic
-                                            title="总邮箱数"
+                                            title="Total Emails"
                                             value={poolStats.total}
                                         />
                                     </div>
@@ -918,7 +918,7 @@ const ApiKeysPage: React.FC = () => {
                                 <Col span={8}>
                                     <div className="stat-orange">
                                         <Statistic
-                                            title="已使用"
+                                            title="Used"
                                             value={poolStats.used}
                                         />
                                     </div>
@@ -926,7 +926,7 @@ const ApiKeysPage: React.FC = () => {
                                 <Col span={8}>
                                     <div className={poolStats.remaining > 0 ? 'stat-green' : 'stat-red'}>
                                         <Statistic
-                                            title="剩余可用"
+                                            title="Remaining"
                                             value={poolStats.remaining}
                                         />
                                     </div>
@@ -941,7 +941,7 @@ const ApiKeysPage: React.FC = () => {
 
                             <div style={{ marginBottom: 24 }}>
                                 <Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
-                                    使用进度
+                                    Usage Progress
                                 </Text>
                                 <Progress
                                     percent={poolStats.total > 0 ? Math.round((poolStats.used / poolStats.total) * 100) : 0}
@@ -957,11 +957,11 @@ const ApiKeysPage: React.FC = () => {
 
                             <div style={{ textAlign: 'center' }}>
                                 <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
-                                    重置后，此 API Key 可重新使用所有邮箱
+                                    After reset, this API Key can reuse all emails
                                 </Text>
                                 <Popconfirm
-                                    title="确定要重置邮箱池吗？"
-                                    description={poolGroupName ? `仅重置分组 "${poolGroupName}" 的使用记录` : '重置后该 API Key 可重新使用所有邮箱'}
+                                    title="Reset email pool?"
+                                    description={poolGroupName ? `Only reset group "${poolGroupName}" usage records` : 'After reset, this API Key can reuse all emails'}
                                     onConfirm={handleResetPool}
                                 >
                                     <Button
@@ -969,33 +969,33 @@ const ApiKeysPage: React.FC = () => {
                                         danger
                                         icon={<ThunderboltOutlined />}
                                     >
-                                        重置邮箱池
+                                        Reset Pool
                                     </Button>
                                 </Popconfirm>
                             </div>
                         </div>
                     ) : (
                         <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
-                            暂无数据
+                            No data
                         </div>
                     )}
                 </Modal>
             )}
 
-            {/* 邮箱管理弹窗 */}
+            {/* Email Management Modal */}
             {emailModalVisible && (
                 <Modal
                     title={
                         <Space>
                             <ThunderboltOutlined />
-                            <span>管理邮箱 - {currentApiKey?.name}</span>
+                            <span>Manage Emails - {currentApiKey?.name}</span>
                         </Space>
                     }
                     open={emailModalVisible}
                     onCancel={() => setEmailModalVisible(false)}
                     onOk={handleSaveEmails}
-                    okText="保存"
-                    cancelText="取消"
+                    okText="Save"
+                    cancelText="Cancel"
                     confirmLoading={savingEmails}
                     destroyOnClose
                     width={600}
@@ -1008,10 +1008,10 @@ const ApiKeysPage: React.FC = () => {
                         <div>
                             <div style={{ marginBottom: 16 }}>
                                 <Space>
-                                    <Text type="secondary">按分组筛选：</Text>
+                                    <Text type="secondary">Filter by group: </Text>
                                     <Select
                                         allowClear
-                                        placeholder="全部分组"
+                                        placeholder="all groups"
                                         style={{ width: 180 }}
                                         value={emailGroupId}
                                         options={emailGroupOptions}
@@ -1025,12 +1025,12 @@ const ApiKeysPage: React.FC = () => {
                                     value={emailKeyword}
                                     onChange={(event) => setEmailKeyword(event.target.value)}
                                     prefix={<SearchOutlined />}
-                                    placeholder="搜索邮箱或分组"
+                                    placeholder="Search emails or groups"
                                 />
                             </div>
                             <div style={{ marginBottom: 16 }}>
                                 <Text type="secondary">
-                                    勾选的邮箱表示该 API Key 已使用过（不会再自动分配）
+                                    Checked emails have been used by this API Key (will not be auto-assigned)
                                 </Text>
                             </div>
                             <div style={{ marginBottom: 16 }}>
@@ -1044,7 +1044,7 @@ const ApiKeysPage: React.FC = () => {
                                             ])));
                                         }}
                                     >
-                                        全选当前筛选
+                                        Select all filtered
                                     </Button>
                                     <Button
                                         size="small"
@@ -1052,11 +1052,11 @@ const ApiKeysPage: React.FC = () => {
                                             setSelectedEmails((prev) => prev.filter((id) => !filteredEmailIdSet.has(id)));
                                         }}
                                     >
-                                        清空当前筛选
+                                        Clear filtered
                                     </Button>
                                     <Text type="secondary">
-                                        已选择 {selectedEmails.length} / {emailList.length}
-                                        {`（当前筛选 ${selectedInFilteredCount} / ${filteredEmailList.length}）`}
+                                        Selected {selectedEmails.length} / {emailList.length}
+                                        {`（Current filter ${selectedInFilteredCount} / ${filteredEmailList.length}）`}
                                     </Text>
                                 </Space>
                             </div>
