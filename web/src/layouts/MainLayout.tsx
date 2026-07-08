@@ -32,14 +32,14 @@ const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
 
 const menuConfig = [
-    { key: '/dashboard', icon: <DashboardOutlined />, label: '数据概览', title: '数据概览' },
-    { key: '/emails', icon: <MailOutlined />, label: '邮箱管理', title: '邮箱管理' },
-    { key: '/api-keys', icon: <KeyOutlined />, label: 'API Key', title: 'API Key 管理' },
-    { key: '/api-docs', icon: <FileTextOutlined />, label: 'API 文档', title: 'API 文档' },
-    { key: '/operation-logs', icon: <HistoryOutlined />, label: '操作日志', title: '操作日志' },
-    { key: '/system-logs', icon: <FileSearchOutlined />, label: '系统日志', title: '系统日志' },
-    { key: '/admins', icon: <UserOutlined />, label: '管理员', title: '管理员管理', superAdmin: true },
-    { key: '/settings', icon: <SettingOutlined />, label: '系统设置', title: '系统设置' },
+    { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard', title: 'Dashboard' },
+    { key: '/emails', icon: <MailOutlined />, label: 'Emails', title: 'Email Management' },
+    { key: '/api-keys', icon: <KeyOutlined />, label: 'API Keys', title: 'API Key Management' },
+    { key: '/api-docs', icon: <FileTextOutlined />, label: 'API Docs', title: 'API Documentation' },
+    { key: '/operation-logs', icon: <HistoryOutlined />, label: 'Audit Logs', title: 'Audit Logs' },
+    { key: '/system-logs', icon: <FileSearchOutlined />, label: 'System Logs', title: 'System Logs' },
+    { key: '/admins', icon: <UserOutlined />, label: 'Admins', title: 'Admin Management', superAdmin: true },
+    { key: '/settings', icon: <SettingOutlined />, label: 'Settings', title: 'System Settings' },
 ];
 
 const MainLayout: React.FC = () => {
@@ -74,21 +74,21 @@ const MainLayout: React.FC = () => {
         {
             key: 'profile',
             icon: <UserOutlined />,
-            label: '个人设置',
+            label: 'Profile',
             onClick: () => navigate('/settings'),
         },
         { type: 'divider' },
         {
             key: 'logout',
             icon: <LogoutOutlined />,
-            label: '退出登录',
+            label: 'Logout',
             danger: true,
             onClick: handleLogout,
         },
     ];
 
     const currentMenu = menuConfig.find(item => location.pathname.startsWith(item.key));
-    const pageTitle = currentMenu?.title || '管理后台';
+    const pageTitle = currentMenu?.title || 'Admin Panel';
 
     const selectedKeys = menuConfig
         .filter(item => location.pathname.startsWith(item.key))
@@ -138,7 +138,7 @@ const MainLayout: React.FC = () => {
                             GX
                         </div>
                         {!collapsed && (
-                            <Text strong style={{ fontSize: 16 }}>廾匸邮箱</Text>
+                            <Text strong style={{ fontSize: 16 }}>GongXi Mail</Text>
                         )}
                     </Space>
                 </div>
@@ -173,7 +173,7 @@ const MainLayout: React.FC = () => {
                         </span>
                         <Breadcrumb
                             items={[
-                                { title: '首页' },
+                                { title: 'Home' },
                                 { title: pageTitle },
                             ]}
                             style={{ marginLeft: 16 }}

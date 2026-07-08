@@ -18,7 +18,7 @@ const errorPlugin: FastifyPluginAsync = async (fastify) => {
     fastify.setErrorHandler((error: FastifyError | AppError | ZodError, request: FastifyRequest, reply: FastifyReply) => {
         logger.error({ err: error, path: request.url, method: request.method, requestId: request.id }, 'Request error');
 
-        // Zod 验证错误
+        // Zod validation error
         if (error instanceof ZodError) {
             return reply.status(400).send({
                 success: false,
@@ -31,7 +31,7 @@ const errorPlugin: FastifyPluginAsync = async (fastify) => {
             });
         }
 
-        // 自定义应用错误
+        // Custom application error
         if (error instanceof AppError) {
             return reply.status(error.statusCode).send({
                 success: false,
@@ -43,7 +43,7 @@ const errorPlugin: FastifyPluginAsync = async (fastify) => {
             });
         }
 
-        // Fastify 验证错误
+        // Fastify validation error
         if (error.validation) {
             return reply.status(400).send({
                 success: false,
@@ -55,7 +55,7 @@ const errorPlugin: FastifyPluginAsync = async (fastify) => {
             });
         }
 
-        // 未知错误
+        // Unknown error
         const statusCode = error.statusCode || 500;
         return reply.status(statusCode).send({
             success: false,
@@ -67,7 +67,7 @@ const errorPlugin: FastifyPluginAsync = async (fastify) => {
         });
     });
 
-    // 注意：404 处理已移至 app.ts 以支持 SPA 路由
+    // Note: 404 handling has been moved to app.ts to support SPA routing
 };
 
 export default fp(errorPlugin, { name: 'error' });

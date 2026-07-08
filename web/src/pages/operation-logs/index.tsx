@@ -34,7 +34,7 @@ const OperationLogsPage: React.FC = () => {
         setLoading(true);
         const result = await requestData<{ list: LogItem[]; total: number }>(
             () => logsApi.getList({ page, pageSize, action: actionFilter }),
-            '获取日志失败'
+            'Failed to fetch logs'
         );
         if (result) {
             setLogs(result.list);
@@ -52,7 +52,7 @@ const OperationLogsPage: React.FC = () => {
 
     const columns = [
         {
-            title: '时间',
+            title: 'Time',
             dataIndex: 'createdAt',
             key: 'createdAt',
             width: 170,
@@ -66,7 +66,7 @@ const OperationLogsPage: React.FC = () => {
             render: (name: string) => name === '-' ? <Text type="secondary">-</Text> : <Tag color="blue">{name}</Tag>,
         },
         {
-            title: '操作',
+            title: 'Action',
             dataIndex: 'action',
             key: 'action',
             width: 140,
@@ -75,14 +75,14 @@ const OperationLogsPage: React.FC = () => {
             },
         },
         {
-            title: '邮箱',
+            title: 'Email',
             dataIndex: 'email',
             key: 'email',
             ellipsis: true,
             render: (email: string) => email === '-' ? <Text type="secondary">-</Text> : email,
         },
         {
-            title: '状态码',
+            title: 'Status Code',
             dataIndex: 'responseCode',
             key: 'responseCode',
             width: 80,
@@ -92,7 +92,7 @@ const OperationLogsPage: React.FC = () => {
             ),
         },
         {
-            title: '耗时',
+            title: 'Duration',
             dataIndex: 'responseTimeMs',
             key: 'responseTimeMs',
             width: 100,
@@ -100,7 +100,7 @@ const OperationLogsPage: React.FC = () => {
             render: (ms: number) => `${ms} ms`,
         },
         {
-            title: 'IP 地址',
+            title: 'IP Address',
             dataIndex: 'requestIp',
             key: 'requestIp',
             width: 140,
@@ -117,11 +117,11 @@ const OperationLogsPage: React.FC = () => {
     return (
         <div>
             <PageHeader
-                title="API 调用日志"
-                subtitle="记录所有通过 API Key 的外部调用"
+                title="API Call Logs"
+                subtitle="Records all external calls made via API Keys"
                 extra={
                     <Button icon={<ReloadOutlined />} onClick={fetchLogs}>
-                        刷新
+                        Refresh
                     </Button>
                 }
             />
@@ -129,14 +129,14 @@ const OperationLogsPage: React.FC = () => {
             <Card bordered={false}>
                 <Space style={{ marginBottom: 16 }}>
                     <Select
-                        placeholder="筛选操作类型"
+                        placeholder="Filter by action type"
                         style={{ width: 160 }}
                         allowClear
                         options={LOG_ACTION_OPTIONS}
                         onChange={(val) => setActionFilter(val as LogAction | undefined)}
                     />
                     <Text type="secondary">
-                        提示：只有通过 API Key 调用的接口才会记录日志
+                        Note: Only endpoints called via API Key are logged
                     </Text>
                 </Space>
 
@@ -151,13 +151,13 @@ const OperationLogsPage: React.FC = () => {
                         total,
                         showSizeChanger: true,
                         showQuickJumper: true,
-                        showTotal: (t) => `共 ${t} 条`,
+                        showTotal: (t) => `Total ${t} items`,
                         onChange: (p, ps) => {
                             setPage(p);
                             setPageSize(ps);
                         },
                     }}
-                    locale={{ emptyText: '暂无 API 调用日志' }}
+                    locale={{ emptyText: 'No API call logs' }}
                 />
             </Card>
         </div>

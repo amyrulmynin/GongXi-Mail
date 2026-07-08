@@ -6,7 +6,7 @@ import type { CreateEmailInput, UpdateEmailInput, ListEmailInput, ImportEmailInp
 
 export const emailService = {
     /**
-     * 获取邮箱列表
+     * Get email list
      */
     async list(input: ListEmailInput) {
         const { page, pageSize, status, keyword, groupId, groupName } = input;
@@ -49,7 +49,7 @@ export const emailService = {
     },
 
     /**
-     * 获取邮箱详情
+     * Get email details
      */
     async getById(id: number, includeSecrets = false) {
         const email = await prisma.emailAccount.findUnique({
@@ -75,7 +75,7 @@ export const emailService = {
             throw new AppError('NOT_FOUND', 'Email account not found', 404);
         }
 
-        // 解密敏感信息
+        // Decrypt sensitive info
         if (includeSecrets) {
             return {
                 ...email,
@@ -88,7 +88,7 @@ export const emailService = {
     },
 
     /**
-     * 根据邮箱地址获取（用于外部 API）
+     * Get by email address (used by external API)
      */
     async getByEmail(emailAddress: string) {
         const email = await prisma.emailAccount.findUnique({
@@ -113,7 +113,7 @@ export const emailService = {
             return null;
         }
 
-        // 解密
+        // Decrypt
         return {
             ...email,
             refreshToken: decrypt(email.refreshToken),
@@ -123,7 +123,7 @@ export const emailService = {
     },
 
     /**
-     * 创建邮箱账户
+     * Create email account
      */
     async create(input: CreateEmailInput) {
         const { email, clientId, refreshToken, password, groupId } = input;
@@ -158,7 +158,7 @@ export const emailService = {
     },
 
     /**
-     * 更新邮箱账户
+     * Update email account
      */
     async update(id: number, input: UpdateEmailInput) {
         const exists = await prisma.emailAccount.findUnique({ where: { id } });
@@ -169,7 +169,7 @@ export const emailService = {
         const { refreshToken, password, ...rest } = input;
         const updateData: Prisma.EmailAccountUpdateInput = { ...rest };
 
-        // 加密 sensitive data
+        // Encrypt sensitive data
         if (refreshToken) {
             updateData.refreshToken = encrypt(refreshToken);
         }
@@ -193,7 +193,7 @@ export const emailService = {
     },
 
     /**
-     * 更新邮箱状态
+     * Update email status
      */
     async updateStatus(id: number, status: 'ACTIVE' | 'ERROR' | 'DISABLED', errorMessage?: string | null) {
         await prisma.emailAccount.update({
@@ -207,7 +207,7 @@ export const emailService = {
     },
 
     /**
-     * 仅更新时间，不改动邮箱状态
+     * Only update the last-check timestamp, without changing email status
      */
     async touchLastCheckAt(id: number) {
         await prisma.emailAccount.update({
@@ -219,7 +219,7 @@ export const emailService = {
     },
 
     /**
-     * 删除邮箱账户
+     * Delete email account
      */
     async delete(id: number) {
         const exists = await prisma.emailAccount.findUnique({ where: { id } });
@@ -232,7 +232,7 @@ export const emailService = {
     },
 
     /**
-     * 批量删除
+     * Batch delete
      */
     async batchDelete(ids: number[]) {
         await prisma.emailAccount.deleteMany({
@@ -242,7 +242,7 @@ export const emailService = {
     },
 
     /**
-     * 批量导入
+     * Batch import
      */
     async import(input: ImportEmailInput) {
         const { content, separator, groupId } = input;
@@ -268,17 +268,17 @@ export const emailService = {
 
                 let email, clientId, refreshToken, password;
 
-                // 尝试猜测格式
-                // 1. email----password----clientId----refreshToken (4列)
-                // 2. email----clientId----refreshToken (3列)
-                // 3. email----clientId----uuid----info----refreshToken (5列)
+                // Try to guess format
+                // 1. email----password----clientId----refreshToken (4 columns)
+                // 2. email----clientId----refreshToken (3 columns)
+                // 3. email----clientId----uuid----info----refreshToken (5 columns)
 
                 if (parts.length >= 5) {
                     // email----clientId----uuid----info----refreshToken
                     email = parts[0];
                     clientId = parts[1];
                     refreshToken = parts[4];
-                    // 这种格式通常没有密码，或者密码隐藏在 info 里？暂且不处理密码
+                    // This format usually has no password, or it may be hidden in info; skip password handling for now
                 } else if (parts.length === 4) {
                     // email----password----clientId----refreshToken
                     email = parts[0];
@@ -304,16 +304,16 @@ export const emailService = {
                 if (password) data.password = encrypt(password);
                 if (groupId !== undefined) data.groupId = groupId;
 
-                // 检查是否存在
+                // Check if it exists
                 const exists = await prisma.emailAccount.findUnique({ where: { email } });
                 if (exists) {
-                    // 更新
+                    // Update
                     await prisma.emailAccount.update({
                         where: { email },
                         data,
                     });
                 } else {
-                    // 创建
+                    // Create
                     const createData: Prisma.EmailAccountUncheckedCreateInput = {
                         email,
                         clientId,
@@ -341,7 +341,7 @@ export const emailService = {
     },
 
     /**
-     * 导出
+     * Export
      */
     async export(ids?: number[], separator = '----', groupId?: number) {
         const where: Prisma.EmailAccountWhereInput = {};
@@ -370,7 +370,7 @@ export const emailService = {
     },
 
     /**
-     * 获取统计
+     * Get statistics
      */
     async getStats() {
         const [total, active, error] = await Promise.all([

@@ -3,25 +3,25 @@ import { adminService } from './admin.service.js';
 import { createAdminSchema, updateAdminSchema, listAdminSchema } from './admin.schema.js';
 
 const adminRoutes: FastifyPluginAsync = async (fastify) => {
-    // 所有路由都需要 JWT 认证 + 超级管理员权限
+    // All routes require JWT authentication + super admin privileges
     fastify.addHook('preHandler', fastify.authenticateJwt);
     fastify.addHook('preHandler', fastify.requireSuperAdmin);
 
-    // 列表
+    // List
     fastify.get('/', async (request) => {
         const input = listAdminSchema.parse(request.query);
         const result = await adminService.list(input);
         return { success: true, data: result };
     });
 
-    // 详情
+    // Details
     fastify.get('/:id', async (request) => {
         const { id } = request.params as { id: string };
         const admin = await adminService.getById(parseInt(id));
         return { success: true, data: admin };
     });
 
-    // 创建
+    // Create
     fastify.post('/', async (request) => {
         const input = createAdminSchema.parse(request.body);
         const admin = await adminService.create(input);
@@ -33,11 +33,11 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
             targetAdminId: admin.id,
             targetUsername: admin.username,
             role: admin.role,
-        }, '新增管理员');
+        }, 'Admin created');
         return { success: true, data: admin };
     });
 
-    // 更新
+    // Update
     fastify.put('/:id', async (request) => {
         const { id } = request.params as { id: string };
         const input = updateAdminSchema.parse(request.body);
@@ -51,11 +51,11 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
             targetUsername: admin.username,
             role: admin.role,
             status: admin.status,
-        }, '修改管理员');
+        }, 'Admin updated');
         return { success: true, data: admin };
     });
 
-    // 删除
+    // Delete
     fastify.delete('/:id', async (request) => {
         const { id } = request.params as { id: string };
         await adminService.delete(parseInt(id));
@@ -65,7 +65,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
             actorId: request.user?.id ?? null,
             actorUsername: request.user?.username ?? null,
             targetAdminId: parseInt(id),
-        }, '删除管理员');
+        }, 'Admin deleted');
         return { success: true, data: { message: 'Admin deleted' } };
     });
 };

@@ -6,7 +6,7 @@ import { MAIL_LOG_ACTIONS } from './mail.actions.js';
 import { z } from 'zod';
 import { AppError } from '../../plugins/error.js';
 
-// 邮件请求 Schema
+// Mail request schema
 const mailRequestSchema = z.object({
     email: z.string().email(),
     mailbox: z.string().default('inbox'),
@@ -14,10 +14,10 @@ const mailRequestSchema = z.object({
     http: z.string().optional(),
 });
 
-// 纯文本邮件请求 Schema
+// Plain text mail request schema
 const mailTextRequestSchema = z.object({
     email: z.string().email(),
-    match: z.string().optional(), // 正则表达式 (可选)
+    match: z.string().optional(), // Regex pattern (optional)
 });
 
 function getErrorStatusCode(err: unknown): number {
@@ -54,11 +54,11 @@ function getGroupNameFromRequest(method: string, query: unknown, body: unknown):
 }
 
 const mailRoutes: FastifyPluginAsync = async (fastify) => {
-    // 所有路由需要 API Key 认证
+    // All routes require API Key authentication
     fastify.addHook('preHandler', fastify.authenticateApiKey);
 
     // ========================================
-    // 新增：获取一个未使用的邮箱地址 (带重试机制)
+    // Get an unused email address (with retry mechanism)
     // ========================================
     fastify.all('/get-email', async (request) => {
         const startTime = Date.now();
@@ -70,7 +70,7 @@ const mailRoutes: FastifyPluginAsync = async (fastify) => {
 
             const groupName = getGroupNameFromRequest(request.method, request.query, request.body);
 
-            // 重试 3 次，防止并发冲突
+            // Retry up to 3 times to prevent concurrency conflicts
             for (let i = 0; i < 3; i++) {
                 const email = await poolService.getUnusedEmail(request.apiKey.id, groupName);
                 if (!email) {
@@ -124,7 +124,7 @@ const mailRoutes: FastifyPluginAsync = async (fastify) => {
     });
 
     // ========================================
-    // 获取最新邮件（必须指定 email）
+    // Get the latest email (email address required)
     // ========================================
     fastify.all('/mail_new', async (request) => {
         const startTime = Date.now();
@@ -137,7 +137,7 @@ const mailRoutes: FastifyPluginAsync = async (fastify) => {
         }
         fastify.assertApiPermission(request, MAIL_LOG_ACTIONS.MAIL_NEW);
 
-        // 查找邮箱
+        // Find the email account
         const emailAccount = await emailService.getByEmail(input.email);
         if (!emailAccount) {
             throw new AppError('EMAIL_NOT_FOUND', 'Email account not found', 404);
@@ -194,7 +194,7 @@ const mailRoutes: FastifyPluginAsync = async (fastify) => {
     });
 
     // ========================================
-    // 新增：获取最新邮件的纯文本内容 (脚本友好)
+    // Get plain text content of the latest email (script friendly)
     // ========================================
     fastify.all('/mail_text', async (request, reply) => {
         const startTime = Date.now();
@@ -243,7 +243,7 @@ const mailRoutes: FastifyPluginAsync = async (fastify) => {
         try {
             const result = await mailService.getEmails(credentials, {
                 mailbox: 'inbox',
-                limit: 1, // 只取最新一封
+                limit: 1, // Only fetch the latest email
             });
 
             await mailService.updateEmailStatus(credentials.id, true);
@@ -263,16 +263,16 @@ const mailRoutes: FastifyPluginAsync = async (fastify) => {
             }
 
             const message = result.messages[0];
-            // 优先使用 text 字段
+            // Prefer the text field
             let content = message.text || '';
 
-            // 如果指定了正则匹配
+            // If a regex pattern is specified
             if (input.match) {
                 try {
                     const regex = new RegExp(input.match);
                     const match = content.match(regex);
                     if (match) {
-                        // 如果有捕获组，返回第一个捕获组；否则返回整个匹配
+                        // If there is a capture group, return the first capture group; otherwise return the entire match
                         content = match[1] || match[0];
                     } else {
                         reply.code(404).type('text/plain').send('Error: No match found');
@@ -302,7 +302,7 @@ const mailRoutes: FastifyPluginAsync = async (fastify) => {
     });
 
     // ========================================
-    // 获取所有邮件（必须指定 email）
+    // Get all emails (email address required)
     // ========================================
     fastify.all('/mail_all', async (request) => {
         const startTime = Date.now();
@@ -370,7 +370,7 @@ const mailRoutes: FastifyPluginAsync = async (fastify) => {
     });
 
     // ========================================
-    // 清空邮箱（必须指定 email）
+    // Clear mailbox (email address required)
     // ========================================
     fastify.all('/process-mailbox', async (request) => {
         const startTime = Date.now();
@@ -438,7 +438,7 @@ const mailRoutes: FastifyPluginAsync = async (fastify) => {
     });
 
     // ========================================
-    // 列出系统 ACTIVE 邮箱（支持分组过滤）
+    // List ACTIVE system emails (supports group filtering)
     // ========================================
     fastify.all('/list-emails', async (request) => {
         const startTime = Date.now();
@@ -500,7 +500,7 @@ const mailRoutes: FastifyPluginAsync = async (fastify) => {
     });
 
     // ========================================
-    // 邮箱池统计（支持分组过滤）
+    // Email pool statistics (supports group filtering)
     // ========================================
     fastify.all('/pool-stats', async (request) => {
         const startTime = Date.now();
@@ -538,7 +538,7 @@ const mailRoutes: FastifyPluginAsync = async (fastify) => {
     });
 
     // ========================================
-    // 重置邮箱池（支持分组过滤）
+    // Reset email pool (supports group filtering)
     // ========================================
     fastify.all('/reset-pool', async (request) => {
         const startTime = Date.now();

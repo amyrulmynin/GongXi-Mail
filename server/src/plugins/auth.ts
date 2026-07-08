@@ -24,7 +24,7 @@ declare module 'fastify' {
 }
 
 /**
- * 提取 Token（从 Header 或 Cookie）
+ * Extract a token (from header or cookie)
  */
 function extractToken(request: FastifyRequest): string | null {
     // Authorization header
@@ -43,7 +43,7 @@ function extractToken(request: FastifyRequest): string | null {
 }
 
 /**
- * 提取 API Key
+ * Extract an API Key
  */
 function extractApiKey(request: FastifyRequest): string | null {
     // X-API-Key header
@@ -70,9 +70,9 @@ function extractApiKey(request: FastifyRequest): string | null {
 const localRateLimitStore = new Map<number, { count: number; resetAt: number }>();
 
 /**
- * API Key 限流（每分钟）
- * - 优先使用 Redis（多实例安全）
- * - Redis 不可用时回退本地内存
+ * API Key rate limiting (per minute)
+ * - Prefer Redis (safe across multiple instances)
+ * - Fall back to in-memory when Redis is unavailable
  */
 async function enforceApiKeyRateLimit(apiKeyId: number, maxPerMinute: number): Promise<void> {
     if (maxPerMinute <= 0) {
@@ -97,7 +97,7 @@ async function enforceApiKeyRateLimit(apiKeyId: number, maxPerMinute: number): P
             }
             return;
         } catch {
-            // Redis 异常时回退本地限流
+            // Fall back to local rate limiting when Redis fails
         }
     }
 
@@ -118,7 +118,7 @@ async function enforceApiKeyRateLimit(apiKeyId: number, maxPerMinute: number): P
 
 const authPlugin: FastifyPluginAsync = async (fastify) => {
     /**
-     * JWT 认证 (管理后台)
+     * JWT authentication (admin panel)
      */
     fastify.decorate('authenticateJwt', async (request: FastifyRequest, _reply: FastifyReply) => {
         const token = extractToken(request);
@@ -140,7 +140,7 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
     });
 
     /**
-     * API Key 认证 (外部 API)
+     * API Key authentication (external API)
      */
     fastify.decorate('authenticateApiKey', async (request: FastifyRequest, _reply: FastifyReply) => {
         const key = extractApiKey(request);
@@ -174,10 +174,10 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
             throw new AppError('API_KEY_EXPIRED', 'API Key has expired', 403);
         }
 
-        // 限流检查（按 API Key）
+        // Rate limit check (per API Key)
         await enforceApiKeyRateLimit(apiKey.id, apiKey.rateLimit);
 
-        // 更新使用统计
+        // Update usage statistics
         await prisma.apiKey.update({
             where: { id: apiKey.id },
             data: {
@@ -205,7 +205,7 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
     });
 
     /**
-     * 超级管理员权限检查
+     * Super admin permission check
      */
     fastify.decorate('requireSuperAdmin', async (request: FastifyRequest, _reply: FastifyReply) => {
         if (!request.user) {

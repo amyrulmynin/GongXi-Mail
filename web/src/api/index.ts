@@ -198,7 +198,7 @@ const toApiResponse = <T>(payload: unknown): ApiResponse<T> => {
     };
 };
 
-// 请求拦截器
+// Request interceptor
 api.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
         const headers = config.headers as Record<string, string>;
@@ -216,7 +216,7 @@ api.interceptors.request.use(
     }
 );
 
-// 响应拦截器 - 适配新的响应格式 { success, data, error }
+// Response interceptor - adapt to the new response format { success, data, error }
 api.interceptors.response.use(
     (response: AxiosResponse<unknown>) => {
         return toApiResponse(response.data) as unknown as AxiosResponse<unknown>;
@@ -236,13 +236,13 @@ api.interceptors.response.use(
             const requestUrl = error.config?.url;
 
             if (shouldClearAuthOnUnauthorized(status, data, requestUrl)) {
-                // Token 过期或无效，跳转到登录页
+                // Token expired or invalid, redirect to login page
                 localStorage.removeItem('token');
                 localStorage.removeItem('admin');
                 window.location.href = '/login';
             }
 
-            // 新格式错误处理
+            // New format error handling
             if (data?.error) {
                 return Promise.reject({
                     code: data.error.code || status,
@@ -344,7 +344,7 @@ const requestDelete = <T>(url: string, config?: MutationConfig): ApiResult<T> =>
 };
 
 // ========================================
-// 认证 API
+// Auth API
 // ========================================
 
 export const authApi = {
@@ -380,7 +380,7 @@ export const authApi = {
 };
 
 // ========================================
-// 管理员 API
+// Admin API
 // ========================================
 
 export const adminApi = {
@@ -462,7 +462,7 @@ export const apiKeyApi = {
 };
 
 // ========================================
-// 邮箱账户 API
+// Email account API
 // ========================================
 
 export const emailApi = {
@@ -514,17 +514,17 @@ export const emailApi = {
             invalidatePrefixes: ['/admin/emails', '/admin/email-groups', '/admin/api-keys', '/admin/dashboard/stats'],
         }),
 
-    // 查看邮件 (管理员专用)
+    // View emails (admin only)
     viewMails: <T = Record<string, unknown>>(id: number, mailbox?: string) =>
         requestGet<{ messages: T[] }>(`/admin/emails/${id}/mails`, { params: { mailbox } }),
 
-    // 清空邮箱 (管理员专用)
+    // Clear mailbox (admin only)
     clearMailbox: (id: number, mailbox?: string) =>
         requestPost<{ deletedCount: number }, { mailbox?: string }>(`/admin/emails/${id}/clear`, {
             mailbox,
         }),
 
-    // Token 刷新
+    // Token refresh
     refreshTokens: (groupId?: number) =>
         requestPost<{ message: string }, { groupId?: number }>('/admin/emails/refresh-tokens',
             groupId ? { groupId } : undefined,
@@ -569,7 +569,7 @@ export const emailApi = {
 };
 
 // ========================================
-// 邮箱分组 API
+// Email group API
 // ========================================
 
 export const groupApi = {
@@ -610,7 +610,7 @@ export const groupApi = {
 };
 
 // ========================================
-// 仪表盘 API
+// Dashboard API
 // ========================================
 
 export const dashboardApi = {
@@ -625,7 +625,7 @@ export const dashboardApi = {
 };
 
 // ========================================
-// 操作日志 API（废弃，使用 dashboardApi.getLogs）
+// Operation log API (deprecated, use dashboardApi.getLogs)
 // ========================================
 
 export const logsApi = {

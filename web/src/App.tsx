@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ConfigProvider, App as AntApp, Spin } from 'antd';
-import zhCN from 'antd/locale/zh_CN';
+import zhCN from 'antd/locale/en_US';
 import { useAuthStore } from './stores/authStore';
 import { isSuperAdmin } from './utils/auth';
 
@@ -23,7 +23,7 @@ const PageFallback: React.FC = () => (
   </div>
 );
 
-// 路由守卫组件
+// Route guard component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, token, admin } = useAuthStore();
 
@@ -34,7 +34,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
-// 超级管理员路由守卫
+// Super admin route guard
 const SuperAdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, token, admin } = useAuthStore();
 
@@ -70,10 +70,10 @@ const App: React.FC = () => {
       <AntApp>
         <BrowserRouter>
           <Routes>
-            {/* 登录页 */}
+            {/* Login page */}
             <Route path="/login" element={withSuspense(<LoginPage />)} />
 
-            {/* 需要认证的页面 */}
+            {/* Authenticated pages */}
             <Route
               path="/"
               element={
@@ -100,7 +100,7 @@ const App: React.FC = () => {
               <Route path="settings" element={withSuspense(<SettingsPage />)} />
             </Route>
 
-            {/* 404 重定向 */}
+            {/* 404 redirect */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </BrowserRouter>

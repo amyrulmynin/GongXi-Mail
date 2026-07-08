@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+﻿import React, { useCallback, useEffect, useState } from 'react';
 import { Card, Form, Input, Button, message, Typography, Space, Tag, Alert, QRCode, Switch, InputNumber, Progress } from 'antd';
 import { LockOutlined, SafetyCertificateOutlined, ReloadOutlined, SyncOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -82,7 +82,7 @@ const SettingsPage: React.FC = () => {
     const loadTwoFactorStatus = async (silent: boolean = false) => {
         const result = await requestData<TwoFactorStatus>(
             () => authApi.getTwoFactorStatus(),
-            '获取二次验证状态失败',
+            'Failed to fetch two-factor status',
             { silent }
         );
         if (result) {
@@ -102,7 +102,7 @@ const SettingsPage: React.FC = () => {
 
         const result = await requestData<TokenRefreshStatus>(
             () => emailApi.getRefreshStatus(),
-            '获取 Token 刷新状态失败',
+            'Failed to fetch token refresh status',
             { silent }
         );
         if (result) {
@@ -127,7 +127,7 @@ const SettingsPage: React.FC = () => {
         const init = async () => {
             const result = await requestData<TwoFactorStatus>(
                 () => authApi.getTwoFactorStatus(),
-                '获取二次验证状态失败',
+            'Failed to fetch two-factor status',
                 { silent: true }
             );
             if (!cancelled && result) {
@@ -182,17 +182,17 @@ const SettingsPage: React.FC = () => {
         confirmPassword: string;
     }) => {
         if (values.newPassword !== values.confirmPassword) {
-            message.error('两次输入的密码不一致');
+            message.error('Passwords do not match');
             return;
         }
 
         setPasswordLoading(true);
         const result = await requestData<{ message?: string }>(
             () => authApi.changePassword(values.oldPassword, values.newPassword),
-            '密码修改失败'
+            'Password change failed'
         );
         if (result) {
-            message.success('密码修改成功');
+            message.success('Password changed successfully');
             form.resetFields();
         }
         setPasswordLoading(false);
@@ -202,12 +202,12 @@ const SettingsPage: React.FC = () => {
         setTwoFactorLoading(true);
         const result = await requestData<{ secret: string; otpauthUrl: string }>(
             () => authApi.setupTwoFactor(),
-            '生成二次验证密钥失败'
+            'Failed to generate two-factor secret'
         );
         if (result) {
             setSetupData(result);
             setTwoFactorStatus((prev) => ({ ...prev, pending: true, enabled: false, legacyEnv: false }));
-            message.info('请在验证器中添加密钥后输入 6 位验证码完成启用');
+            message.info('Add the secret to your authenticator app, then enter the 6-digit code to complete setup');
         }
         setTwoFactorLoading(false);
     };
@@ -215,17 +215,17 @@ const SettingsPage: React.FC = () => {
     const handleEnable2Fa = async () => {
         const otp = enableOtp.trim();
         if (!/^\d{6}$/.test(otp)) {
-            message.error('请输入 6 位验证码');
+            message.error('Please enter the 6-digit code');
             return;
         }
 
         setTwoFactorLoading(true);
         const result = await requestData<{ enabled: boolean }>(
             () => authApi.enableTwoFactor(otp),
-            '启用二次验证失败'
+            'Failed to enable two-factor auth'
         );
         if (result) {
-            message.success('二次验证已启用');
+            message.success('Two-factor auth enabled');
             setEnableOtp('');
             setSetupData(null);
             await loadTwoFactorStatus();
@@ -237,10 +237,10 @@ const SettingsPage: React.FC = () => {
         setTwoFactorLoading(true);
         const result = await requestData<{ enabled: boolean }>(
             () => authApi.disableTwoFactor(values.password, values.otp),
-            '禁用二次验证失败'
+            'Failed to disable two-factor auth'
         );
         if (result) {
-            message.success('二次验证已禁用');
+            message.success('Two-factor auth disabled');
             disable2FaForm.resetFields();
             await loadTwoFactorStatus();
         }
@@ -251,10 +251,10 @@ const SettingsPage: React.FC = () => {
         setTokenRefreshActionLoading(true);
         const result = await requestData<{ message?: string }>(
             () => emailApi.refreshTokens(),
-            '启动 Token 刷新失败'
+            'Failed to start token refresh'
         );
         if (result) {
-            message.success(result.message || 'Token 刷新任务已启动');
+            message.success(result.message || 'Token refresh job started');
             await loadTokenRefreshStatus(true);
         }
         setTokenRefreshActionLoading(false);
@@ -270,11 +270,11 @@ const SettingsPage: React.FC = () => {
                     intervalHours: Number(values.intervalHours),
                     concurrency: Number(values.concurrency),
                 }),
-                '保存 Token 自动刷新配置失败'
+                'Failed to save token auto-refresh config'
             );
 
             if (result) {
-                message.success('Token 自动刷新配置已保存');
+                message.success('Token auto-refresh config saved');
                 tokenRefreshForm.setFieldsValue({
                     enabled: result.enabled,
                     intervalHours: result.intervalHours,
@@ -289,14 +289,14 @@ const SettingsPage: React.FC = () => {
 
     const formatDateTime = (value: string | null | undefined) => {
         if (!value) {
-            return '暂无';
+            return 'N/A';
         }
         return dayjs(value).format('YYYY-MM-DD HH:mm:ss');
     };
 
     const formatDuration = (durationMs: number | null | undefined) => {
         if (!durationMs || durationMs <= 0) {
-            return '0 秒';
+            return '0 sec';
         }
 
         const totalSeconds = Math.max(1, Math.round(durationMs / 1000));
@@ -304,10 +304,10 @@ const SettingsPage: React.FC = () => {
         const seconds = totalSeconds % 60;
 
         if (minutes === 0) {
-            return `${totalSeconds} 秒`;
+            return `${totalSeconds} sec`;
         }
 
-        return `${minutes} 分 ${seconds} 秒`;
+        return `${minutes} min ${seconds} sec`;
     };
 
     const progressPercent = tokenRefreshStatus?.currentRun?.total
@@ -320,17 +320,17 @@ const SettingsPage: React.FC = () => {
 
     return (
         <div>
-            <Title level={4}>设置</Title>
+            <Title level={4}>Settings</Title>
 
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                <Card title="个人信息">
+                <Card title="Profile">
                     <div style={{ display: 'grid', gap: 16 }}>
                         <div>
-                            <Text type="secondary">用户名</Text>
+                            <Text type="secondary">Username</Text>
                             <div style={{ fontSize: 16 }}>{admin?.username}</div>
                         </div>
                         <div>
-                            <Text type="secondary">角色</Text>
+                            <Text type="secondary">Role</Text>
                             <div style={{ fontSize: 16 }}>
                                 {getAdminRoleLabel(admin?.role)}
                             </div>
@@ -338,7 +338,7 @@ const SettingsPage: React.FC = () => {
                     </div>
                 </Card>
 
-                <Card title="修改密码">
+                <Card title="Change Password">
                     <Form
                         form={form}
                         layout="vertical"
@@ -347,65 +347,65 @@ const SettingsPage: React.FC = () => {
                     >
                         <Form.Item
                             name="oldPassword"
-                            label="当前密码"
-                            rules={[{ required: true, message: '请输入当前密码' }]}
+                            label="Current Password"
+                            rules={[{ required: true, message: 'Please enter current password' }]}
                         >
-                            <Input.Password prefix={<LockOutlined />} placeholder="当前密码" />
+                            <Input.Password prefix={<LockOutlined />} placeholder="Current password" />
                         </Form.Item>
 
                         <Form.Item
                             name="newPassword"
-                            label="新密码"
+                            label="New Password"
                             rules={[
-                                { required: true, message: '请输入新密码' },
-                                { min: 6, message: '密码至少 6 个字符' },
+                                { required: true, message: 'Please enter new password' },
+                                { min: 6, message: 'Password must be at least 6 characters' },
                             ]}
                         >
-                            <Input.Password prefix={<LockOutlined />} placeholder="新密码" />
+                            <Input.Password prefix={<LockOutlined />} placeholder="New password" />
                         </Form.Item>
 
                         <Form.Item
                             name="confirmPassword"
-                            label="确认新密码"
+                            label="Confirm New Password"
                             rules={[
-                                { required: true, message: '请确认新密码' },
+                                { required: true, message: 'Please confirm new password' },
                                 ({ getFieldValue }) => ({
                                     validator(_, value) {
                                         if (!value || getFieldValue('newPassword') === value) {
                                             return Promise.resolve();
                                         }
-                                        return Promise.reject(new Error('两次输入的密码不一致'));
+                                        return Promise.reject(new Error('Passwords do not match'));
                                     },
                                 }),
                             ]}
                         >
-                            <Input.Password prefix={<LockOutlined />} placeholder="确认新密码" />
+                            <Input.Password prefix={<LockOutlined />} placeholder="Confirm new password" />
                         </Form.Item>
 
                         <Form.Item>
                             <Button type="primary" htmlType="submit" loading={passwordLoading}>
-                                修改密码
+                                Change Password
                             </Button>
                         </Form.Item>
                     </Form>
                 </Card>
 
-                <Card title="二次验证（2FA）">
+                <Card title="Two-Factor Auth (2FA)">
                     {twoFactorStatusLoading ? (
-                        <Text type="secondary">加载中...</Text>
+                        <Text type="secondary">Loading...</Text>
                     ) : (
                         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
                             <div>
-                                <Text type="secondary">当前状态：</Text>{' '}
-                                {twoFactorStatus.enabled ? <Tag color="success">已启用</Tag> : <Tag>未启用</Tag>}
-                                {twoFactorStatus.pending && !twoFactorStatus.enabled ? <Tag color="processing">待验证</Tag> : null}
+                                <Text type="secondary">Status:</Text>{' '}
+                                {twoFactorStatus.enabled ? <Tag color="success">Enabled</Tag> : <Tag>Disabled</Tag>}
+                                {twoFactorStatus.pending && !twoFactorStatus.enabled ? <Tag color="processing">Pending</Tag> : null}
                             </div>
 
                             {twoFactorStatus.legacyEnv ? (
                                 <Alert
                                     type="warning"
                                     showIcon
-                                    message="当前账号使用环境变量 2FA（ADMIN_2FA_SECRET），暂不支持在界面中直接管理。"
+                                    message="This account uses environment variable 2FA (ADMIN_2FA_SECRET). It cannot be managed from the UI."
                                 />
                             ) : null}
 
@@ -416,68 +416,68 @@ const SettingsPage: React.FC = () => {
                                     onClick={handleSetup2Fa}
                                     loading={twoFactorLoading}
                                 >
-                                    生成绑定密钥
+                                    Generate Binding Secret
                                 </Button>
                             ) : null}
 
                             {setupData ? (
-                                <Card size="small" title="绑定信息">
+                                <Card size="small" title="Binding Info">
                                     <Space direction="vertical" style={{ width: '100%' }}>
                                         <div style={{ textAlign: 'center' }}>
-                                            <Text type="secondary">扫码绑定（推荐）</Text>
+                                            <Text type="secondary">Scan QR code to bind (recommended)</Text>
                                             <div style={{ marginTop: 8 }}>
                                                 <QRCode value={setupData.otpauthUrl} size={180} />
                                             </div>
                                         </div>
                                         <div>
-                                            <Text type="secondary">手动密钥（可复制）</Text>
+                                            <Text type="secondary">Manual secret (copyable)</Text>
                                             <div><Text copyable>{setupData.secret}</Text></div>
                                         </div>
                                         <div>
-                                            <Text type="secondary">otpauth 链接（可复制）</Text>
+                                            <Text type="secondary">otpauth URL (copyable)</Text>
                                             <div><Text copyable>{setupData.otpauthUrl}</Text></div>
                                         </div>
                                         <Input
                                             value={enableOtp}
                                             onChange={(e) => setEnableOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                            placeholder="输入验证器中的 6 位验证码"
+                                            placeholder="Enter the 6-digit code from your authenticator"
                                             maxLength={6}
                                             prefix={<SafetyCertificateOutlined />}
                                         />
                                         <Button type="primary" onClick={handleEnable2Fa} loading={twoFactorLoading}>
-                                            启用二次验证
+                                            Enable Two-Factor Auth
                                         </Button>
                                     </Space>
                                 </Card>
                             ) : null}
 
                             {twoFactorStatus.enabled ? (
-                                <Card size="small" title="禁用二次验证">
+                                <Card size="small" title="Disable Two-Factor Auth">
                                     <Form form={disable2FaForm} layout="vertical" onFinish={handleDisable2Fa}>
                                         <Form.Item
                                             name="password"
-                                            label="当前密码"
-                                            rules={[{ required: true, message: '请输入当前密码' }]}
+                                            label="Current Password"
+                                            rules={[{ required: true, message: 'Please enter current password' }]}
                                         >
-                                            <Input.Password prefix={<LockOutlined />} placeholder="当前密码" />
+                                            <Input.Password prefix={<LockOutlined />} placeholder="Current password" />
                                         </Form.Item>
                                         <Form.Item
                                             name="otp"
-                                            label="验证码"
+                                            label="Verification Code"
                                             rules={[
-                                                { required: true, message: '请输入验证码' },
-                                                { pattern: /^\d{6}$/, message: '请输入 6 位验证码' },
+                                                { required: true, message: 'Please enter verification code' },
+                                                { pattern: /^\d{6}$/, message: 'Please enter a 6-digit code' },
                                             ]}
                                         >
                                             <Input
                                                 maxLength={6}
                                                 prefix={<SafetyCertificateOutlined />}
-                                                placeholder="6 位验证码"
+                                                placeholder="6-digit code"
                                             />
                                         </Form.Item>
                                         <Form.Item style={{ marginBottom: 0 }}>
                                             <Button danger htmlType="submit" loading={twoFactorLoading}>
-                                                禁用二次验证
+                                                Disable Two-Factor Auth
                                             </Button>
                                         </Form.Item>
                                     </Form>
@@ -487,39 +487,39 @@ const SettingsPage: React.FC = () => {
                     )}
                 </Card>
 
-                <Card title="Token 自动刷新">
+                <Card title="Token Auto-Refresh">
                     {tokenRefreshStatusLoading ? (
-                        <Text type="secondary">加载中...</Text>
+                        <Text type="secondary">Loading...</Text>
                     ) : tokenRefreshStatus ? (
                         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
                             <div>
-                                <Text type="secondary">自动任务：</Text>{' '}
-                                {tokenRefreshStatus.enabled ? <Tag color="success">已启用</Tag> : <Tag>已停用</Tag>}
-                                {isAutoRefreshRunning ? <Tag color="processing">自动执行中</Tag> : null}
-                                {isManualRefreshRunning ? <Tag color="processing">手动任务运行中</Tag> : null}
-                                {!tokenRefreshStatus.isRunning ? <Tag>空闲</Tag> : null}
+                                <Text type="secondary">Auto task:</Text>{' '}
+                                {tokenRefreshStatus.enabled ? <Tag color="success">Enabled</Tag> : <Tag>Disabled</Tag>}
+                                {isAutoRefreshRunning ? <Tag color="processing">Auto running</Tag> : null}
+                                {isManualRefreshRunning ? <Tag color="processing">Manual task running</Tag> : null}
+                                {!tokenRefreshStatus.isRunning ? <Tag>Idle</Tag> : null}
                             </div>
 
                             <div style={{ display: 'grid', gap: 12 }}>
                                 <div>
-                                    <Text type="secondary">当前配置</Text>
+                                    <Text type="secondary">Current config</Text>
                                     <div style={{ fontSize: 16 }}>
-                                        每 {tokenRefreshStatus.intervalHours} 小时执行一次，并发 {tokenRefreshStatus.concurrency}
+                                        Every {tokenRefreshStatus.intervalHours} hours, concurrency {tokenRefreshStatus.concurrency}
                                     </div>
                                 </div>
                                 <div>
-                                    <Text type="secondary">上次完成</Text>
+                                    <Text type="secondary">Last completed</Text>
                                     <div style={{ fontSize: 16 }}>{formatDateTime(tokenRefreshStatus.lastRunAt)}</div>
                                 </div>
                                 <div>
-                                    <Text type="secondary">下次计划</Text>
+                                    <Text type="secondary">Next scheduled</Text>
                                     <div style={{ fontSize: 16 }}>
                                         {!tokenRefreshStatus.enabled
-                                            ? '自动任务已停用'
+                                            ? 'Auto task disabled'
                                             : isAutoRefreshRunning
-                                                ? '当前自动任务执行中，完成后重新计算'
+                                                ? 'Auto task running, will recalculate after completion'
                                                 : isManualRefreshRunning
-                                                    ? '当前有手动刷新任务运行中，自动任务将在空闲后继续调度'
+                                                    ? 'Manual refresh running, auto task will continue after idle'
                                                 : formatDateTime(tokenRefreshStatus.nextRunAt)}
                                     </div>
                                 </div>
@@ -529,24 +529,24 @@ const SettingsPage: React.FC = () => {
                                 <Alert
                                     type={tokenRefreshStatus.lastResult.failed > 0 ? 'warning' : 'success'}
                                     showIcon
-                                    message={`最近一次自动完成: 成功 ${tokenRefreshStatus.lastResult.success} / 失败 ${tokenRefreshStatus.lastResult.failed} / 总计 ${tokenRefreshStatus.lastResult.total}`}
-                                    description={`完成时间 ${formatDateTime(tokenRefreshStatus.lastRunAt)}，耗时 ${formatDuration(tokenRefreshStatus.lastResult.durationMs)}`}
+                                    message={`Last auto run: Success ${tokenRefreshStatus.lastResult.success} / Failed ${tokenRefreshStatus.lastResult.failed} / Total ${tokenRefreshStatus.lastResult.total}`}
+                                    description={`Completed at ${formatDateTime(tokenRefreshStatus.lastRunAt)}, duration ${formatDuration(tokenRefreshStatus.lastResult.durationMs)}`}
                                 />
                             ) : (
-                                <Text type="secondary">暂无执行记录</Text>
+                                <Text type="secondary">No run history</Text>
                             )}
 
                             {isManualRefreshRunning ? (
                                 <Alert
                                     type="info"
                                     showIcon
-                                    message="当前有手动刷新任务运行中"
-                                    description={`触发人 ${activeRun?.requestedByUsername || '未知管理员'}，范围 ${activeRun?.groupId ? `分组 #${activeRun.groupId}` : '全部未禁用邮箱'}。本页的“最近一次自动完成”只统计自动任务。`}
+                                    message="Manual refresh task running"
+                                    description={`Triggered by ${activeRun?.requestedByUsername || 'Unknown admin'}, scope ${activeRun?.groupId ? `Group #${activeRun.groupId}` : 'All non-disabled emails'}. The "Last auto run" stat above only counts auto tasks.`}
                                 />
                             ) : null}
 
                             {activeRun ? (
-                                <Card size="small" title={activeRun.trigger === 'AUTO' ? '当前自动任务进度' : '当前手动任务进度'}>
+                                <Card size="small" title={activeRun.trigger === 'AUTO' ? 'Current Auto Task Progress' : 'Current Manual Task Progress'}>
                                     <Space direction="vertical" size="middle" style={{ width: '100%' }}>
                                         <Progress
                                             percent={progressPercent}
@@ -555,29 +555,29 @@ const SettingsPage: React.FC = () => {
                                         />
                                         <div style={{ display: 'grid', gap: 12 }}>
                                             <div>
-                                                <Text type="secondary">触发方式</Text>
+                                                <Text type="secondary">Trigger</Text>
                                                 <div style={{ fontSize: 16 }}>
-                                                    {activeRun.trigger === 'AUTO' ? '系统自动调度' : `管理员手动触发${activeRun.requestedByUsername ? `（${activeRun.requestedByUsername}）` : ''}`}
+                                                    {activeRun.trigger === 'AUTO' ? 'System auto-scheduled' : `Manual trigger${activeRun.requestedByUsername ? ` (${activeRun.requestedByUsername})` : ''}`}
                                                 </div>
                                             </div>
                                             <div>
-                                                <Text type="secondary">执行范围</Text>
+                                                <Text type="secondary">Scope</Text>
                                                 <div style={{ fontSize: 16 }}>
-                                                    {activeRun.groupId ? `分组 #${activeRun.groupId}` : '全部未禁用邮箱'}
+                                                    {activeRun.groupId ? `Group #${activeRun.groupId}` : 'All non-disabled emails'}
                                                 </div>
                                             </div>
                                             <div>
-                                                <Text type="secondary">开始时间</Text>
+                                                <Text type="secondary">Started at</Text>
                                                 <div style={{ fontSize: 16 }}>{formatDateTime(activeRun.startedAt)}</div>
                                             </div>
                                             <div>
-                                                <Text type="secondary">已运行</Text>
+                                                <Text type="secondary">Elapsed</Text>
                                                 <div style={{ fontSize: 16 }}>{formatDuration(activeRun.durationMs)}</div>
                                             </div>
                                             <div>
-                                                <Text type="secondary">当前统计</Text>
+                                                <Text type="secondary">Current stats</Text>
                                                 <div style={{ fontSize: 16 }}>
-                                                    成功 {activeRun.success} / 失败 {activeRun.failed} / 待处理 {Math.max(0, activeRun.total - activeRun.completed)}
+                                                    Success {activeRun.success} / Failed {activeRun.failed} / Pending {Math.max(0, activeRun.total - activeRun.completed)}
                                                 </div>
                                             </div>
                                         </div>
@@ -588,8 +588,8 @@ const SettingsPage: React.FC = () => {
                             <Card
                                 size="small"
                                 title={activeRun
-                                    ? activeRun.trigger === 'AUTO' ? '当前自动任务最近失败' : '当前手动任务最近失败'
-                                    : '最近一次自动任务失败'}
+                                    ? activeRun.trigger === 'AUTO' ? 'Current Auto Task Recent Failures' : 'Current Manual Task Recent Failures'
+                                    : 'Last Auto Task Failures'}
                             >
                                 {displayedFailures.length > 0 ? (
                                     <Space direction="vertical" size="small" style={{ width: '100%' }}>
@@ -610,7 +610,7 @@ const SettingsPage: React.FC = () => {
                                     </Space>
                                 ) : (
                                     <Text type="secondary">
-                                        {activeRun ? '当前任务暂无失败记录' : '最近没有自动任务失败记录'}
+                                        {activeRun ? 'No failures in current task' : 'No recent auto task failures'}
                                     </Text>
                                 )}
                             </Card>
@@ -621,7 +621,7 @@ const SettingsPage: React.FC = () => {
                                     onClick={() => void loadTokenRefreshStatus()}
                                     loading={tokenRefreshStatusLoading}
                                 >
-                                    刷新状态
+                                    Refresh Status
                                 </Button>
                                 <Button
                                     type="primary"
@@ -630,11 +630,11 @@ const SettingsPage: React.FC = () => {
                                     loading={tokenRefreshActionLoading}
                                     disabled={tokenRefreshStatus.isRunning}
                                 >
-                                    立即执行一次
+                                    Run Now
                                 </Button>
                             </Space>
 
-                            <Card size="small" title="自动刷新配置">
+                            <Card size="small" title="Auto-Refresh Config">
                                 <Form
                                     form={tokenRefreshForm}
                                     layout="vertical"
@@ -646,23 +646,23 @@ const SettingsPage: React.FC = () => {
                                 >
                                     <Form.Item
                                         name="enabled"
-                                        label="启用自动刷新"
+                                        label="Enable Auto-Refresh"
                                         valuePropName="checked"
                                     >
-                                        <Switch checkedChildren="开启" unCheckedChildren="关闭" />
+                                        <Switch checkedChildren="On" unCheckedChildren="Off" />
                                     </Form.Item>
                                     <Form.Item
                                         name="intervalHours"
-                                        label="执行间隔（小时）"
+                                        label="Interval (hours)"
                                         rules={[
-                                            { required: true, message: '请输入执行间隔' },
+                                            { required: true, message: 'Please enter interval' },
                                             {
                                                 validator: (_, value) => {
                                                     const num = Number(value);
                                                     if (Number.isInteger(num) && num >= 1 && num <= 24 * 30) {
                                                         return Promise.resolve();
                                                     }
-                                                    return Promise.reject(new Error('请输入 1 到 720 之间的整数'));
+                                                    return Promise.reject(new Error('Must be an integer between 1 and 720'));
                                                 },
                                             },
                                         ]}
@@ -671,16 +671,16 @@ const SettingsPage: React.FC = () => {
                                     </Form.Item>
                                     <Form.Item
                                         name="concurrency"
-                                        label="刷新并发数"
+                                        label="Concurrency"
                                         rules={[
-                                            { required: true, message: '请输入并发数' },
+                                            { required: true, message: 'Please enter concurrency' },
                                             {
                                                 validator: (_, value) => {
                                                     const num = Number(value);
                                                     if (Number.isInteger(num) && num >= 1 && num <= 50) {
                                                         return Promise.resolve();
                                                     }
-                                                    return Promise.reject(new Error('请输入 1 到 50 之间的整数'));
+                                                    return Promise.reject(new Error('Must be an integer between 1 and 50'));
                                                 },
                                             },
                                         ]}
@@ -694,7 +694,7 @@ const SettingsPage: React.FC = () => {
                                             loading={tokenRefreshSaveLoading}
                                             disabled={tokenRefreshStatus.isRunning}
                                         >
-                                            保存自动刷新配置
+                                            Save Auto-Refresh Config
                                         </Button>
                                     </Form.Item>
                                 </Form>
@@ -703,23 +703,23 @@ const SettingsPage: React.FC = () => {
                             <Alert
                                 type="info"
                                 showIcon
-                                message="配置保存后立即生效"
-                                description="自动任务会根据新配置重新安排下一次执行，运行中的任务不会被强制中断。"
+                                message="Config takes effect immediately after saving"
+                                description="The auto task will reschedule based on the new config. Running tasks will not be forcefully interrupted."
                             />
                         </Space>
                     ) : (
-                        <Text type="secondary">暂无数据</Text>
+                        <Text type="secondary">No data</Text>
                     )}
                 </Card>
 
-                <Card title="API 使用说明">
+                <Card title="API Usage Guide">
                     <div style={{ marginBottom: 16 }}>
-                        <Text strong>外部 API 调用方式</Text>
+                        <Text strong>External API Usage</Text>
                     </div>
 
                     <div style={{ background: '#f5f5f5', padding: 16, borderRadius: 8, marginBottom: 16 }}>
                         <Text code style={{ display: 'block', marginBottom: 8 }}>
-                            # 通过 Header 传递 API Key
+                            # Pass API Key via Header
                         </Text>
                         <Text code style={{ display: 'block', wordBreak: 'break-all' }}>
                             curl -H "X-API-Key: your_api_key" https://your-domain.com/api/mail_all
@@ -728,7 +728,7 @@ const SettingsPage: React.FC = () => {
 
                     <div style={{ background: '#f5f5f5', padding: 16, borderRadius: 8 }}>
                         <Text code style={{ display: 'block', marginBottom: 8 }}>
-                            # 通过 Query 参数传递 API Key
+                            # Pass API Key via Query parameter
                         </Text>
                         <Text code style={{ display: 'block', wordBreak: 'break-all' }}>
                             curl "https://your-domain.com/api/mail_all?api_key=your_api_key&email=xxx@outlook.com"

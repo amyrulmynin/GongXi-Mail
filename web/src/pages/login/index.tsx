@@ -24,7 +24,7 @@ const LoginPage: React.FC = () => {
 
     const finishLogin = (result: { token: string; admin: { id: number; username: string; email?: string; role: 'SUPER_ADMIN' | 'ADMIN'; twoFactorEnabled?: boolean } }) => {
         setAuth(result.token, result.admin);
-        message.success('登录成功');
+        message.success('Login successful');
         navigate('/');
     };
 
@@ -41,9 +41,9 @@ const LoginPage: React.FC = () => {
                 setPendingCredentials({ username: values.username, password: values.password });
                 setOtpCode('');
                 setOtpModalVisible(true);
-                message.info('该账号已启用二次验证，请输入 6 位验证码');
+                message.info('This account has two-factor authentication enabled. Please enter the 6-digit code.');
             } else {
-                message.error(getErrorMessage(err, '登录失败'));
+                message.error(getErrorMessage(err, 'Login failed'));
             }
         } finally {
             setLoading(false);
@@ -56,7 +56,7 @@ const LoginPage: React.FC = () => {
         }
         const otp = otpCode.trim();
         if (!/^\d{6}$/.test(otp)) {
-            message.error('请输入 6 位验证码');
+            message.error('Please enter the 6-digit code');
             return;
         }
 
@@ -72,9 +72,9 @@ const LoginPage: React.FC = () => {
         } catch (err: unknown) {
             const errCode = String((err as { code?: unknown })?.code || '').toUpperCase();
             if (errCode === 'INVALID_OTP') {
-                message.error('验证码错误，请重试');
+                message.error('Invalid code, please try again');
             } else {
-                message.error(getErrorMessage(err, '验证失败'));
+                message.error(getErrorMessage(err, 'Verification failed'));
             }
         } finally {
             setOtpLoading(false);
@@ -99,9 +99,9 @@ const LoginPage: React.FC = () => {
             >
                 <div style={{ textAlign: 'center', marginBottom: 24 }}>
                     <Title level={3} style={{ margin: '0 0 8px 0' }}>
-                        GongXi 邮箱
+                        GongXi Mail
                     </Title>
-                    <Text type="secondary">管理控制台</Text>
+                    <Text type="secondary">Admin Console</Text>
                 </div>
 
                 <Form
@@ -111,21 +111,21 @@ const LoginPage: React.FC = () => {
                 >
                     <Form.Item
                         name="username"
-                        rules={[{ required: true, message: '请输入用户名' }]}
+                        rules={[{ required: true, message: 'Please enter your username' }]}
                     >
                         <Input
                             prefix={<UserOutlined />}
-                            placeholder="用户名"
+                            placeholder="Username"
                         />
                     </Form.Item>
 
                     <Form.Item
                         name="password"
-                        rules={[{ required: true, message: '请输入密码' }]}
+                        rules={[{ required: true, message: 'Please enter your password' }]}
                     >
                         <Input.Password
                             prefix={<LockOutlined />}
-                            placeholder="密码"
+                            placeholder="Password"
                         />
                     </Form.Item>
 
@@ -133,7 +133,7 @@ const LoginPage: React.FC = () => {
                         style={{ marginTop: -6, marginBottom: 16 }}
                     >
                         <Text type="secondary" style={{ fontSize: 12 }}>
-                            若账号已启用 2FA，下一步会弹窗输入验证码
+                            If 2FA is enabled on this account, a verification code prompt will appear next.
                         </Text>
                     </Form.Item>
 
@@ -144,14 +144,14 @@ const LoginPage: React.FC = () => {
                             loading={loading}
                             block
                         >
-                            登录
+                            Login
                         </Button>
                     </Form.Item>
                 </Form>
             </Card>
 
             <Modal
-                title="二次验证"
+                title="Two-Factor Authentication"
                 open={otpModalVisible}
                 onOk={handleOtpConfirm}
                 onCancel={() => {
@@ -159,19 +159,19 @@ const LoginPage: React.FC = () => {
                     setPendingCredentials(null);
                     setOtpCode('');
                 }}
-                okText="验证并登录"
-                cancelText="取消"
+                okText="Verify & Login"
+                cancelText="Cancel"
                 confirmLoading={otpLoading}
                 destroyOnClose
             >
                 <Space direction="vertical" style={{ width: '100%' }}>
-                    <Text type="secondary">请输入验证器中的 6 位动态码</Text>
+                    <Text type="secondary">Enter the 6-digit code from your authenticator app</Text>
                     <Input
                         value={otpCode}
                         onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                         prefix={<SafetyCertificateOutlined />}
                         maxLength={6}
-                        placeholder="6 位验证码"
+                        placeholder="6-digit code"
                     />
                 </Space>
             </Modal>

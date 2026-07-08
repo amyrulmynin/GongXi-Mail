@@ -4,23 +4,23 @@ import { systemLogService } from './system-log.service.js';
 import { z } from 'zod';
 
 const dashboardRoutes: FastifyPluginAsync = async (fastify) => {
-    // 所有路由需要 JWT 认证
+    // All routes require JWT authentication
     fastify.addHook('preHandler', fastify.authenticateJwt);
 
-    // 统计数据
+    // Statistics
     fastify.get('/stats', async () => {
         const stats = await dashboardService.getStats();
         return { success: true, data: stats };
     });
 
-    // API 调用趋势
+    // API call trend
     fastify.get('/api-trend', async (request) => {
         const { days } = z.object({ days: z.coerce.number().default(7) }).parse(request.query);
         const trend = await dashboardService.getApiTrend(days);
         return { success: true, data: trend };
     });
 
-    // 操作日志
+    // Operation logs
     fastify.get('/logs', async (request) => {
         const input = z.object({
             page: z.coerce.number().default(1),

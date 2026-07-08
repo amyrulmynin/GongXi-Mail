@@ -9,7 +9,7 @@ interface StatCardProps {
     value: number | string;
     icon?: React.ReactNode;
     iconBgColor?: string;
-    trend?: number; // 百分比变化，正数为上升，负数为下降
+    trend?: number; // Percentage change; positive = up, negative = down
     trendLabel?: string;
     suffix?: string;
     loading?: boolean;

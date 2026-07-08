@@ -6,7 +6,7 @@ import type { CreateAdminInput, UpdateAdminInput, ListAdminInput } from './admin
 
 export const adminService = {
     /**
-     * 获取管理员列表
+     * Get admin list
      */
     async list(input: ListAdminInput) {
         const { page, pageSize, keyword } = input;
@@ -45,7 +45,7 @@ export const adminService = {
     },
 
     /**
-     * 获取管理员详情
+     * Get admin details
      */
     async getById(id: number) {
         const admin = await prisma.admin.findUnique({
@@ -72,12 +72,12 @@ export const adminService = {
     },
 
     /**
-     * 创建管理员
+     * Create admin
      */
     async create(input: CreateAdminInput) {
         const { username, password, email, role } = input;
 
-        // 检查用户名是否存在
+        // Check if username already exists
         const exists = await prisma.admin.findUnique({ where: { username } });
         if (exists) {
             throw new AppError('DUPLICATE_USERNAME', 'Username already exists', 400);
@@ -107,7 +107,7 @@ export const adminService = {
     },
 
     /**
-     * 更新管理员
+     * Update admin
      */
     async update(id: number, input: UpdateAdminInput) {
         const admin = await prisma.admin.findUnique({ where: { id } });
@@ -152,7 +152,7 @@ export const adminService = {
     },
 
     /**
-     * 删除管理员
+     * Delete admin
      */
     async delete(id: number) {
         const admin = await prisma.admin.findUnique({ where: { id } });

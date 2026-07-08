@@ -181,27 +181,27 @@ const DashboardPage: React.FC = () => {
 
     const emailColumns = [
         {
-            title: '邮箱',
+            title: 'Email',
             dataIndex: 'email',
             key: 'email',
             ellipsis: true,
         },
         {
-            title: '状态',
+            title: 'Status',
             dataIndex: 'status',
             key: 'status',
             width: 80,
             render: (status: string) => {
                 const config: Record<string, { color: string; text: string }> = {
-                    ACTIVE: { color: 'success', text: '正常' },
-                    ERROR: { color: 'error', text: '异常' },
-                    DISABLED: { color: 'default', text: '禁用' },
+                    ACTIVE: { color: 'success', text: 'Active' },
+                    ERROR: { color: 'error', text: 'Error' },
+                    DISABLED: { color: 'default', text: 'Disabled' },
                 };
                 return <Tag color={config[status]?.color}>{config[status]?.text}</Tag>;
             },
         },
         {
-            title: '添加时间',
+            title: 'Created At',
             dataIndex: 'createdAt',
             key: 'createdAt',
             width: 120,
@@ -211,32 +211,32 @@ const DashboardPage: React.FC = () => {
 
     const apiKeyColumns = [
         {
-            title: '名称',
+            title: 'Name',
             dataIndex: 'name',
             key: 'name',
             ellipsis: true,
         },
         {
-            title: '使用次数',
+            title: 'Usage Count',
             dataIndex: 'usageCount',
             key: 'usageCount',
             width: 100,
             render: (val: number) => <Text strong>{(val || 0).toLocaleString()}</Text>,
         },
         {
-            title: '状态',
+            title: 'Status',
             dataIndex: 'status',
             key: 'status',
             width: 80,
             render: (status: string) => (
                 <Tag color={status === 'ACTIVE' ? 'success' : 'default'}>
-                    {status === 'ACTIVE' ? '启用' : '禁用'}
+                    {status === 'ACTIVE' ? 'Active' : 'Disabled'}
                 </Tag>
             ),
         },
     ];
 
-    // 图表配置
+    // Chart config
     const lineConfig = useMemo(() => ({
         data: apiTrend,
         xField: 'date',
@@ -256,9 +256,9 @@ const DashboardPage: React.FC = () => {
     }), [apiTrend]);
 
     const pieData = useMemo(() => (stats ? [
-        { type: '正常', value: stats.emails.active },
-        { type: '异常', value: stats.emails.error },
-        { type: '禁用', value: Math.max(0, stats.emails.total - stats.emails.active - stats.emails.error) },
+        { type: 'Active', value: stats.emails.active },
+        { type: 'Error', value: stats.emails.error },
+        { type: 'Disabled', value: Math.max(0, stats.emails.total - stats.emails.active - stats.emails.error) },
     ].filter(d => d.value > 0) : []), [stats]);
 
     const pieConfig = useMemo(() => ({
@@ -276,7 +276,7 @@ const DashboardPage: React.FC = () => {
             style: { textAlign: 'center', fontSize: 14 },
         },
         statistic: {
-            title: { content: '邮箱' },
+            title: { content: 'Emails' },
             content: { content: stats?.emails.total?.toString() || '0' },
         },
     }), [pieData, stats]);
@@ -288,13 +288,13 @@ const DashboardPage: React.FC = () => {
 
     return (
         <div>
-            <PageHeader title="数据概览" subtitle="实时监控系统运行状态" />
+            <PageHeader title="Dashboard" subtitle="Real-time system status monitoring" />
 
-            {/* 统计卡片 */}
+            {/* Stats cards */}
             <Row gutter={[16, 16]}>
                 <Col xs={12} sm={12} md={6}>
                     <StatCard
-                        title="邮箱总数"
+                        title="Total Emails"
                         value={statsData.emails.total}
                         icon={<MailOutlined />}
                         iconBgColor="#1890ff"
@@ -302,7 +302,7 @@ const DashboardPage: React.FC = () => {
                 </Col>
                 <Col xs={12} sm={12} md={6}>
                     <StatCard
-                        title="正常邮箱"
+                        title="Active Emails"
                         value={statsData.emails.active}
                         icon={<CheckCircleOutlined />}
                         iconBgColor="#52c41a"
@@ -311,7 +311,7 @@ const DashboardPage: React.FC = () => {
                 </Col>
                 <Col xs={12} sm={12} md={6}>
                     <StatCard
-                        title="API 调用总数"
+                        title="Total API Calls"
                         value={statsData.apiKeys.totalUsage}
                         icon={<ApiOutlined />}
                         iconBgColor="#722ed1"
@@ -319,7 +319,7 @@ const DashboardPage: React.FC = () => {
                 </Col>
                 <Col xs={12} sm={12} md={6}>
                     <StatCard
-                        title="活跃 API Key"
+                        title="Active API Keys"
                         value={statsData.apiKeys.active}
                         icon={<KeyOutlined />}
                         iconBgColor="#fa8c16"
@@ -328,10 +328,10 @@ const DashboardPage: React.FC = () => {
                 </Col>
             </Row>
 
-            {/* 图表区域 */}
+            {/* Charts */}
             <Row gutter={[16, 16]} style={{ marginTop: 16 }} ref={chartsSectionRef}>
                 <Col xs={24} md={16}>
-                    <Card title="API 调用趋势（近7天）" bordered={false}>
+                    <Card title="API Call Trend (Last 7 Days)" bordered={false}>
                         {!chartsReady || !chartsInView || trendLoading ? (
                             <div style={{ textAlign: 'center', padding: 40, minHeight: 280 }}><Spin /></div>
                         ) : (
@@ -342,7 +342,7 @@ const DashboardPage: React.FC = () => {
                     </Card>
                 </Col>
                 <Col xs={24} md={8}>
-                    <Card title="邮箱状态分布" bordered={false}>
+                    <Card title="Email Status Distribution" bordered={false}>
                         {coreLoading || !chartsReady || !chartsInView ? (
                             <div style={{ textAlign: 'center', padding: 40, minHeight: 280 }}><Spin /></div>
                         ) : pieData.length > 0 ? (
@@ -351,21 +351,21 @@ const DashboardPage: React.FC = () => {
                             </Suspense>
                         ) : (
                             <div style={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <Text type="secondary">暂无数据</Text>
+                                <Text type="secondary">No data</Text>
                             </div>
                         )}
                     </Card>
                 </Col>
             </Row>
 
-            {/* 列表区域 */}
+            {/* Lists */}
             <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
                 <Col xs={24} md={12}>
                     <Card
-                        title="最近添加的邮箱"
+                        title="Recently Added Emails"
                         bordered={false}
                         bodyStyle={{ padding: 0 }}
-                        extra={<Link to="/emails">查看全部</Link>}
+                        extra={<Link to="/emails">View all</Link>}
                     >
                         <Table
                             dataSource={recentEmails}
@@ -374,16 +374,16 @@ const DashboardPage: React.FC = () => {
                             loading={coreLoading}
                             pagination={false}
                             size="small"
-                            locale={{ emptyText: '暂无数据' }}
+                            locale={{ emptyText: 'No data' }}
                         />
                     </Card>
                 </Col>
                 <Col xs={24} md={12}>
                     <Card
-                        title="API Key 使用排行"
+                        title="API Key Usage Ranking"
                         bordered={false}
                         bodyStyle={{ padding: 0 }}
-                        extra={<Link to="/api-keys">查看全部</Link>}
+                        extra={<Link to="/api-keys">View all</Link>}
                     >
                         <Table
                             dataSource={recentApiKeys}
@@ -392,7 +392,7 @@ const DashboardPage: React.FC = () => {
                             loading={coreLoading}
                             pagination={false}
                             size="small"
-                            locale={{ emptyText: '暂无数据' }}
+                            locale={{ emptyText: 'No data' }}
                         />
                     </Card>
                 </Col>

@@ -46,7 +46,7 @@ async function getLockRemainingSeconds(cacheKey: string): Promise<number> {
                 return ttl;
             }
         } catch {
-            // Redis 异常时回退本地存储
+            // Fall back to local store when Redis fails
         }
     }
 
@@ -75,7 +75,7 @@ async function clearLoginAttempts(cacheKey: string): Promise<void> {
         try {
             await redis.del(buildRedisLoginAttemptKey(cacheKey), buildRedisLoginLockKey(cacheKey));
         } catch {
-            // Redis 异常时继续清理本地存储
+            // Continue clearing local store when Redis fails
         }
     }
 
@@ -100,7 +100,7 @@ async function recordLoginFailure(cacheKey: string): Promise<number> {
             }
             return 0;
         } catch {
-            // Redis 异常时回退本地存储
+            // Fall back to local store when Redis fails
         }
     }
 
@@ -156,7 +156,7 @@ function decryptAdmin2FaSecret(encryptedSecret: string | null | undefined): stri
 
 export const authService = {
     /**
-     * 管理员登录
+     * Admin login
      */
     async login(input: LoginInput, ip?: string) {
         const { username, password, otp } = input;
@@ -166,7 +166,7 @@ export const authService = {
             throw new AppError('ACCOUNT_LOCKED', formatLockMessage(lockSeconds), 429);
         }
 
-        // 查询管理员
+        // Query admin
         const admin = await prisma.admin.findUnique({
             where: { username },
             select: {
@@ -180,7 +180,7 @@ export const authService = {
             },
         });
 
-        // 管理员不存在，检查是否是默认管理员
+        // Admin not found; check if this is the default admin
         if (!admin) {
             if (username === env.ADMIN_USERNAME && password === env.ADMIN_PASSWORD) {
                 if (!verifyLegacyTotpCode(otp)) {
@@ -191,7 +191,7 @@ export const authService = {
                     throw new AppError('INVALID_OTP', 'Invalid two-factor code', 401);
                 }
 
-                // 如果是默认管理员但数据库不存在，自动创建
+                // If the default admin does not exist in the DB, create it automatically
                 const passwordHash = await hashPassword(password);
                 const newAdmin = await prisma.admin.create({
                     data: {
@@ -204,7 +204,7 @@ export const authService = {
 
                 await clearLoginAttempts(loginAttemptCacheKey);
 
-                // 使用新创建的管理员信息生成 Token
+                // Generate a token using the newly created admin info
                 const token = await signToken({
                     sub: newAdmin.id.toString(),
                     username: newAdmin.username,
@@ -229,12 +229,12 @@ export const authService = {
             throw new AppError('INVALID_CREDENTIALS', 'Invalid username or password', 401);
         }
 
-        // 检查状态
+        // Check status
         if (admin.status !== 'ACTIVE') {
             throw new AppError('ACCOUNT_DISABLED', 'Account is disabled', 403);
         }
 
-        // 验证密码
+        // Verify password
         const isValid = await verifyPassword(password, admin.passwordHash);
         if (!isValid) {
             const newLockSeconds = await recordLoginFailure(loginAttemptCacheKey);
@@ -258,7 +258,7 @@ export const authService = {
 
         await clearLoginAttempts(loginAttemptCacheKey);
 
-        // 更新登录信息
+        // Update login info
         await prisma.admin.update({
             where: { id: admin.id },
             data: {
@@ -267,7 +267,7 @@ export const authService = {
             },
         });
 
-        // 生成 Token
+        // Generate token
         const token = await signToken({
             sub: admin.id.toString(),
             username: admin.username,
@@ -286,12 +286,12 @@ export const authService = {
     },
 
     /**
-     * 修改密码
+     * Change password
      */
     async changePassword(adminId: number, input: ChangePasswordInput) {
         const { oldPassword, newPassword } = input;
 
-        // 环境变量管理员（id=0）不能修改密码
+        // Environment variable admin (id=0) cannot change password
         if (adminId === 0) {
             throw new AppError('CANNOT_CHANGE', 'Cannot change password for default admin', 400);
         }
@@ -320,7 +320,7 @@ export const authService = {
     },
 
     /**
-     * 获取当前管理员信息
+     * Get current admin info
      */
     async getMe(adminId: number) {
         if (adminId === 0) {
@@ -353,7 +353,7 @@ export const authService = {
     },
 
     /**
-     * 2FA 状态
+     * 2FA status
      */
     async getTwoFactorStatus(adminId: number) {
         if (adminId === 0) {
@@ -385,7 +385,7 @@ export const authService = {
     },
 
     /**
-     * 生成 2FA 绑定信息
+     * Generate 2FA binding info
      */
     async setupTwoFactor(adminId: number) {
         if (adminId === 0) {
@@ -424,7 +424,7 @@ export const authService = {
     },
 
     /**
-     * 启用 2FA
+     * Enable 2FA
      */
     async enableTwoFactor(adminId: number, input: Verify2FaInput) {
         if (adminId === 0) {
@@ -470,7 +470,7 @@ export const authService = {
     },
 
     /**
-     * 禁用 2FA
+     * Disable 2FA
      */
     async disableTwoFactor(adminId: number, input: Disable2FaInput) {
         if (adminId === 0) {

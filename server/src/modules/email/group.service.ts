@@ -4,7 +4,7 @@ import type { CreateGroupInput, UpdateGroupInput } from './group.schema.js';
 
 export const groupService = {
     /**
-     * 获取所有分组（含邮箱计数）
+     * Get all groups (with email counts)
      */
     async list() {
         const groups = await prisma.emailGroup.findMany({
@@ -26,7 +26,7 @@ export const groupService = {
     },
 
     /**
-     * 根据 ID 获取分组详情
+     * Get group details by ID
      */
     async getById(id: number) {
         const group = await prisma.emailGroup.findUnique({
@@ -48,14 +48,14 @@ export const groupService = {
     },
 
     /**
-     * 根据名称获取分组
+     * Get group by name
      */
     async getByName(name: string) {
         return prisma.emailGroup.findUnique({ where: { name } });
     },
 
     /**
-     * 创建分组
+     * Create group
      */
     async create(input: CreateGroupInput) {
         const existing = await prisma.emailGroup.findUnique({
@@ -76,7 +76,7 @@ export const groupService = {
     },
 
     /**
-     * 更新分组
+     * Update group
      */
     async update(id: number, input: UpdateGroupInput) {
         const group = await prisma.emailGroup.findUnique({ where: { id } });
@@ -100,7 +100,7 @@ export const groupService = {
     },
 
     /**
-     * 删除分组（邮箱的 groupId 置 null）
+     * Delete group (sets groupId to null on linked emails)
      */
     async delete(id: number) {
         const group = await prisma.emailGroup.findUnique({ where: { id } });
@@ -108,7 +108,7 @@ export const groupService = {
             throw new AppError('GROUP_NOT_FOUND', 'Email group not found', 404);
         }
 
-        // 先将该组下所有邮箱的 groupId 置 null
+        // First set groupId to null for all emails in this group
         await prisma.emailAccount.updateMany({
             where: { groupId: id },
             data: { groupId: null },
@@ -119,7 +119,7 @@ export const groupService = {
     },
 
     /**
-     * 将邮箱分配到分组
+     * Assign emails to a group
      */
     async assignEmails(groupId: number, emailIds: number[]) {
         const group = await prisma.emailGroup.findUnique({ where: { id: groupId } });
@@ -136,7 +136,7 @@ export const groupService = {
     },
 
     /**
-     * 将邮箱移出分组（groupId 置 null）
+     * Remove emails from a group (sets groupId to null)
      */
     async removeEmails(groupId: number, emailIds: number[]) {
         const result = await prisma.emailAccount.updateMany({

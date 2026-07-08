@@ -40,19 +40,19 @@ export async function buildApp() {
         ? parsedCorsOrigins
         : env.NODE_ENV === 'development';
 
-    // 插件
+    // Plugins
     await fastify.register(fastifyCors, {
         origin: corsOrigin,
         credentials: true,
     });
 
     await fastify.register(fastifyHelmet, {
-        contentSecurityPolicy: false, // 允许前端加载
+        contentSecurityPolicy: false, // Allow the frontend to load
     });
 
     await fastify.register(fastifyCookie);
 
-    // 自定义插件
+    // Custom plugins
     await fastify.register(errorPlugin);
     await fastify.register(authPlugin);
 
@@ -60,7 +60,7 @@ export async function buildApp() {
         reply.header('x-request-id', request.id);
     });
 
-    // 健康检查
+    // Health check
     fastify.get('/health', async () => {
         return {
             success: true,
@@ -70,7 +70,7 @@ export async function buildApp() {
         };
     });
 
-    // 静态文件（前端）- 禁用 fastify-static 的默认 404 处理
+    // Static files (frontend) - disable fastify-static's default 404 handling
     const staticRoot = join(__dirname, '../../public');
     if (env.NODE_ENV === 'production') {
         try {
@@ -87,11 +87,11 @@ export async function buildApp() {
     await fastify.register(fastifyStatic, {
         root: staticRoot,
         prefix: '/',
-        wildcard: false, // 禁用通配符，让我们自定义处理 SPA
+        wildcard: false, // Disable wildcard so we can handle SPA fallback ourselves
         preCompressed: true,
     });
 
-    // API 路由
+    // API routes
     await fastify.register(authRoutes, { prefix: '/admin/auth' });
     await fastify.register(adminRoutes, { prefix: '/admin/admins' });
     await fastify.register(apiKeyRoutes, { prefix: '/admin/api-keys' });
@@ -99,15 +99,15 @@ export async function buildApp() {
     await fastify.register(groupRoutes, { prefix: '/admin/email-groups' });
     await fastify.register(dashboardRoutes, { prefix: '/admin/dashboard' });
 
-    // 外部 API
+    // External API
     await fastify.register(mailRoutes, { prefix: '/api' });
 
-    // SPA fallback - 现在可以安全使用 setNotFoundHandler
+    // SPA fallback - safe to use setNotFoundHandler now
     fastify.setNotFoundHandler(async (request, reply) => {
         const path = request.url.split('?')[0];
         const accepts = request.headers.accept;
 
-        // 如果是 API 路由，返回 404 JSON
+        // If this is an API route, return a 404 JSON response
         if (isApiOrAdminPath(path)) {
             return reply.status(404).send({
                 success: false,
@@ -116,7 +116,7 @@ export async function buildApp() {
             });
         }
 
-        // 非页面请求，返回 404 JSON
+        // Non-page request, return a 404 JSON response
         if (!shouldServeSpaIndex({ method: request.method, path, accept: accepts })) {
             return reply.status(404).send({
                 success: false,
@@ -125,7 +125,7 @@ export async function buildApp() {
             });
         }
 
-        // 否则返回 index.html（SPA）
+        // Otherwise fall back to index.html (SPA)
         return reply.sendFile('index.html');
     });
 

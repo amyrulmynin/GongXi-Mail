@@ -24,7 +24,7 @@ interface SystemLogItem {
 }
 
 const levelOptions = [
-    { label: '全部级别', value: '' },
+    { label: 'All Levels', value: '' },
     { label: 'TRACE', value: 'trace' },
     { label: 'DEBUG', value: 'debug' },
     { label: 'INFO', value: 'info' },
@@ -34,10 +34,10 @@ const levelOptions = [
 ];
 
 const lineOptions = [
-    { label: '最近 100 条', value: 100 },
-    { label: '最近 200 条', value: 200 },
-    { label: '最近 500 条', value: 500 },
-    { label: '最近 1000 条', value: 1000 },
+    { label: 'Last 100 lines', value: 100 },
+    { label: 'Last 200 lines', value: 200 },
+    { label: 'Last 500 lines', value: 500 },
+    { label: 'Last 1000 lines', value: 1000 },
 ];
 
 function getLevelColor(level: SystemLogLevel) {
@@ -75,7 +75,7 @@ const SystemLogsPage: React.FC = () => {
                 keyword: keyword || undefined,
                 lines,
             }),
-            '获取系统日志失败'
+            'Failed to fetch system logs'
         );
         if (result) {
             setLogs(result.list);
@@ -94,35 +94,35 @@ const SystemLogsPage: React.FC = () => {
 
     const columns = [
         {
-            title: '时间',
+            title: 'Time',
             dataIndex: 'time',
             key: 'time',
             width: 180,
             render: (value: string) => dayjs(value).format('YYYY-MM-DD HH:mm:ss'),
         },
         {
-            title: '级别',
+            title: 'Level',
             dataIndex: 'level',
             key: 'level',
             width: 100,
             render: (level: SystemLogLevel) => <Tag color={getLevelColor(level)}>{level.toUpperCase()}</Tag>,
         },
         {
-            title: '操作',
+            title: 'Action',
             dataIndex: 'action',
             key: 'action',
             width: 220,
             render: (action: string | null) => action ? <Text code>{action}</Text> : <Text type="secondary">-</Text>,
         },
         {
-            title: '操作者',
+            title: 'Actor',
             dataIndex: 'actorUsername',
             key: 'actorUsername',
             width: 140,
-            render: (value: string | null) => value || <Text type="secondary">系统</Text>,
+            render: (value: string | null) => value || <Text type="secondary">System</Text>,
         },
         {
-            title: '触发',
+            title: 'Trigger',
             dataIndex: 'trigger',
             key: 'trigger',
             width: 100,
@@ -131,7 +131,7 @@ const SystemLogsPage: React.FC = () => {
                 : <Text type="secondary">-</Text>,
         },
         {
-            title: '消息',
+            title: 'Message',
             dataIndex: 'message',
             key: 'message',
             ellipsis: true,
@@ -141,11 +141,11 @@ const SystemLogsPage: React.FC = () => {
     return (
         <div>
             <PageHeader
-                title="系统日志"
-                subtitle="查看后台业务事件日志，例如新增、修改、删除、刷新和系统任务"
+                title="System Logs"
+                subtitle="View backend business event logs such as create, update, delete, refresh and system tasks"
                 extra={(
                     <Button icon={<ReloadOutlined />} onClick={() => void fetchLogs()}>
-                        刷新
+                        Refresh
                     </Button>
                 )}
             />
@@ -155,8 +155,8 @@ const SystemLogsPage: React.FC = () => {
                     <Alert
                         type="info"
                         showIcon
-                        message="日志文件"
-                        description={filePath || '当前还没有生成日志文件'}
+                        message="Log file"
+                        description={filePath || 'No log file has been generated yet'}
                     />
 
                     <Space wrap>
@@ -173,7 +173,7 @@ const SystemLogsPage: React.FC = () => {
                             onChange={setLines}
                         />
                         <Input.Search
-                            placeholder="搜索日志关键字"
+                            placeholder="Search log keywords"
                             value={keywordInput}
                             onChange={(event) => setKeywordInput(event.target.value)}
                             onSearch={(value) => setKeyword(value.trim())}
@@ -188,7 +188,7 @@ const SystemLogsPage: React.FC = () => {
                         columns={columns}
                         loading={loading}
                         pagination={false}
-                        locale={{ emptyText: '暂无系统日志' }}
+                        locale={{ emptyText: 'No system logs' }}
                         expandable={{
                             expandedRowRender: (record: SystemLogItem) => (
                                 <div style={{ display: 'grid', gap: 12 }}>
@@ -201,13 +201,13 @@ const SystemLogsPage: React.FC = () => {
                                         </div>
                                     ) : null}
                                     <div>
-                                        <Text strong>上下文</Text>
+                                        <Text strong>Context</Text>
                                         <pre style={{ margin: '8px 0 0', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
                                             {JSON.stringify(record.context, null, 2) || '{}'}
                                         </pre>
                                     </div>
                                     <div>
-                                        <Text strong>原始日志</Text>
+                                        <Text strong>Raw log</Text>
                                         <pre style={{ margin: '8px 0 0', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
                                             {record.raw}
                                         </pre>

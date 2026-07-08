@@ -17,14 +17,14 @@ const LEGACY_ACTION_ALIASES: Record<string, LogAction> = {
 };
 
 export const LOG_ACTION_LABELS: Record<LogAction, string> = {
-    [LOG_ACTIONS.GET_EMAIL]: '分配邮箱',
-    [LOG_ACTIONS.MAIL_NEW]: '获取最新邮件',
-    [LOG_ACTIONS.MAIL_TEXT]: '获取邮件文本',
-    [LOG_ACTIONS.MAIL_ALL]: '获取所有邮件',
-    [LOG_ACTIONS.PROCESS_MAILBOX]: '清空邮箱',
-    [LOG_ACTIONS.LIST_EMAILS]: '获取邮箱列表',
-    [LOG_ACTIONS.POOL_STATS]: '邮箱池统计',
-    [LOG_ACTIONS.POOL_RESET]: '重置邮箱池',
+    [LOG_ACTIONS.GET_EMAIL]: 'Allocate email',
+    [LOG_ACTIONS.MAIL_NEW]: 'Get latest email',
+    [LOG_ACTIONS.MAIL_TEXT]: 'Get email text',
+    [LOG_ACTIONS.MAIL_ALL]: 'Get all emails',
+    [LOG_ACTIONS.PROCESS_MAILBOX]: 'Clear mailbox',
+    [LOG_ACTIONS.LIST_EMAILS]: 'List emails',
+    [LOG_ACTIONS.POOL_STATS]: 'Pool statistics',
+    [LOG_ACTIONS.POOL_RESET]: 'Reset pool',
 };
 
 export const LOG_ACTION_COLORS: Record<LogAction, string> = {

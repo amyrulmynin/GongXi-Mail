@@ -8,17 +8,17 @@ import { AppError } from '../../plugins/error.js';
 import { getTokenRefreshJobNextRunAt, refreshTokenRefreshJobSchedule } from '../../jobs/token-refresh.js';
 
 const emailRoutes: FastifyPluginAsync = async (fastify) => {
-    // 所有路由需要 JWT 认证
+    // All routes require JWT authentication
     fastify.addHook('preHandler', fastify.authenticateJwt);
 
-    // 列表
+    // List
     fastify.get('/', async (request) => {
         const input = listEmailSchema.parse(request.query);
         const result = await emailService.list(input);
         return { success: true, data: result };
     });
 
-    // 详情
+    // Details
     fastify.get('/:id', async (request) => {
         const { id } = request.params as { id: string };
         const { secrets } = request.query as { secrets?: string };
@@ -26,7 +26,7 @@ const emailRoutes: FastifyPluginAsync = async (fastify) => {
         return { success: true, data: email };
     });
 
-    // 创建
+    // Create
     fastify.post('/', async (request) => {
         const input = createEmailSchema.parse(request.body);
         const email = await emailService.create(input);
@@ -37,11 +37,11 @@ const emailRoutes: FastifyPluginAsync = async (fastify) => {
             actorUsername: request.user?.username ?? null,
             emailId: email.id,
             email: email.email,
-        }, '新增邮箱');
+        }, 'Email created');
         return { success: true, data: email };
     });
 
-    // 更新
+    // Update
     fastify.put('/:id', async (request) => {
         const { id } = request.params as { id: string };
         const input = updateEmailSchema.parse(request.body);
@@ -54,11 +54,11 @@ const emailRoutes: FastifyPluginAsync = async (fastify) => {
             emailId: email.id,
             email: email.email,
             status: email.status,
-        }, '修改邮箱');
+        }, 'Email updated');
         return { success: true, data: email };
     });
 
-    // 删除
+    // Delete
     fastify.delete('/:id', async (request) => {
         const { id } = request.params as { id: string };
         await emailService.delete(parseInt(id));
@@ -68,11 +68,11 @@ const emailRoutes: FastifyPluginAsync = async (fastify) => {
             actorId: request.user?.id ?? null,
             actorUsername: request.user?.username ?? null,
             emailId: parseInt(id),
-        }, '删除邮箱');
+        }, 'Email deleted');
         return { success: true, data: { message: 'Email account deleted' } };
     });
 
-    // 批量删除
+    // Batch delete
     fastify.post('/batch-delete', async (request) => {
         const { ids } = z.object({ ids: z.array(z.number()) }).parse(request.body);
         const result = await emailService.batchDelete(ids);
@@ -83,11 +83,11 @@ const emailRoutes: FastifyPluginAsync = async (fastify) => {
             actorUsername: request.user?.username ?? null,
             emailIds: ids,
             deletedCount: result.deleted,
-        }, '批量删除邮箱');
+        }, 'Batch delete emails');
         return { success: true, data: result };
     });
 
-    // 批量导入
+    // Batch import
     fastify.post('/import', async (request) => {
         const input = importEmailSchema.parse(request.body);
         const result = await emailService.import(input);
@@ -100,11 +100,11 @@ const emailRoutes: FastifyPluginAsync = async (fastify) => {
             success: result.success,
             failed: result.failed,
             errorCount: result.errors.length,
-        }, '批量导入邮箱');
+        }, 'Batch import emails');
         return { success: true, data: result };
     });
 
-    // 导出
+    // Export
     fastify.get('/export', async (request) => {
         const query = z.object({
             ids: z.string().optional(),
@@ -121,11 +121,11 @@ const emailRoutes: FastifyPluginAsync = async (fastify) => {
             actorUsername: request.user?.username ?? null,
             groupId: query.groupId ?? null,
             emailCount: idArray?.length ?? null,
-        }, '导出邮箱');
+        }, 'Export emails');
         return { success: true, data: { content } };
     });
 
-    // 查看邮件 (管理员专用)
+    // View emails (admin only)
     fastify.get('/:id/mails', async (request) => {
         const { id } = request.params as { id: string };
         const { mailbox } = request.query as { mailbox?: string };
@@ -146,7 +146,7 @@ const emailRoutes: FastifyPluginAsync = async (fastify) => {
         return { success: true, data: mails };
     });
 
-    // 清空邮箱 (管理员专用)
+    // Clear mailbox (admin only)
     fastify.post('/:id/clear', async (request) => {
         const { id } = request.params as { id: string };
         const { mailbox } = request.body as { mailbox?: string };
@@ -172,12 +172,12 @@ const emailRoutes: FastifyPluginAsync = async (fastify) => {
             emailId: emailData.id,
             email: emailData.email,
             mailbox: mailbox || 'INBOX',
-        }, '清空邮箱');
+        }, 'Clear mailbox');
         return { success: true, data: result };
     });
 
     // ========================================
-    // Token 刷新 - 批量刷新所有未禁用邮箱的 Token
+    // Token refresh - batch refresh tokens for all non-disabled emails
     // ========================================
     fastify.post('/refresh-tokens', async (request) => {
         const body = z.object({
@@ -195,9 +195,9 @@ const emailRoutes: FastifyPluginAsync = async (fastify) => {
             groupId: body?.groupId ?? null,
             requestedById: request.user?.id ?? null,
             requestedByUsername: request.user?.username ?? null,
-        }, '手动触发批量刷新 Token');
+        }, 'Manual batch token refresh triggered');
 
-        // 异步执行，不阻塞请求
+        // Execute asynchronously, do not block the request
         void tokenRefreshService.refreshAll({
             groupId: body?.groupId,
             trigger: 'MANUAL',
@@ -214,7 +214,7 @@ const emailRoutes: FastifyPluginAsync = async (fastify) => {
                 groupId: body?.groupId ?? null,
                 requestedById: request.user?.id ?? null,
                 requestedByUsername: request.user?.username ?? null,
-            }, '手动批量刷新 Token 失败');
+            }, 'Manual batch token refresh failed');
         });
         return { success: true, data: { message: 'Token refresh started' } };
     });
@@ -236,13 +236,13 @@ const emailRoutes: FastifyPluginAsync = async (fastify) => {
             enabled: settings.enabled,
             intervalHours: settings.intervalHours,
             concurrency: settings.concurrency,
-        }, '修改 Token 自动刷新设置');
+        }, 'Token auto-refresh settings updated');
 
         return { success: true, data: settings };
     });
 
     // ========================================
-    // Token 刷新 - 单个邮箱
+    // Token refresh - single email
     // ========================================
     fastify.post('/:id/refresh-token', async (request) => {
         const { id } = request.params as { id: string };
@@ -255,12 +255,12 @@ const emailRoutes: FastifyPluginAsync = async (fastify) => {
             emailId: result.emailId,
             email: result.email || null,
             success: result.success,
-        }, result.success ? '手动刷新单个邮箱 Token 成功' : '手动刷新单个邮箱 Token 失败');
+        }, result.success ? 'Manual single email token refresh succeeded' : 'Manual single email token refresh failed');
         return { success: true, data: result };
     });
 
     // ========================================
-    // Token 刷新状态查询
+    // Token refresh status query
     // ========================================
     fastify.get('/refresh-status', async () => {
         const settings = await tokenRefreshService.getTokenRefreshConfig();

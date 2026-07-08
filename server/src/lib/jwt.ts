@@ -11,7 +11,7 @@ export interface JwtPayload {
 }
 
 /**
- * 生成 JWT Token
+ * Sign a JWT token
  */
 export async function signToken(payload: { sub: string; role: string; username: string }): Promise<string> {
     const token = await new jose.SignJWT(payload as jose.JWTPayload)
@@ -24,7 +24,7 @@ export async function signToken(payload: { sub: string; role: string; username: 
 }
 
 /**
- * 验证 JWT Token
+ * Verify a JWT token
  */
 export async function verifyToken(token: string): Promise<JwtPayload | null> {
     try {
@@ -36,7 +36,7 @@ export async function verifyToken(token: string): Promise<JwtPayload | null> {
 }
 
 /**
- * 解析 Token（不验证，仅用于调试）
+ * Decode a token without validating (for debugging only)
  */
 export function decodeToken(token: string): JwtPayload | null {
     try {

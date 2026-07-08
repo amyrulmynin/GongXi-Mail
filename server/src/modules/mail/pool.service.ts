@@ -30,7 +30,7 @@ function parseJsonIdList(value: Prisma.JsonValue | null | undefined): number[] {
 }
 
 /**
- * 根据分组名解析 groupId，返回 undefined 表示不过滤
+ * Resolve groupId from group name; returns undefined to skip filtering
  */
 async function resolveGroupId(groupName?: string): Promise<number | undefined> {
     if (!groupName) return undefined;
@@ -108,7 +108,7 @@ export const poolService = {
     },
 
     /**
-     * 获取未被该 API Key 使用过的邮箱（可按分组过滤）
+     * Get an unused email for this API Key (optionally filtered by group)
      */
     async getUnusedEmail(apiKeyId: number, groupName?: string) {
         const scope = await getApiKeyScope(apiKeyId);
@@ -152,7 +152,7 @@ export const poolService = {
     },
 
     /**
-     * 标记邮箱已被使用
+     * Mark an email as used
      */
     async markUsed(apiKeyId: number, emailAccountId: number) {
         try {
@@ -168,7 +168,7 @@ export const poolService = {
     },
 
     /**
-     * 检查 API Key 是否拥有该邮箱的使用权
+     * Check whether the API Key has access to the given email
      */
     async checkOwnership(apiKeyId: number, emailAddress: string) {
         const email = await prisma.emailAccount.findUnique({
@@ -188,7 +188,7 @@ export const poolService = {
     },
 
     /**
-     * 获取已分配给该 API Key 的邮箱列表
+     * Get the list of emails allocated to this API Key
      */
     async getAllocatedEmails(apiKeyId: number) {
         const usages = await prisma.emailUsage.findMany({
@@ -212,7 +212,7 @@ export const poolService = {
     },
 
     /**
-     * 获取使用统计（可按分组过滤）
+     * Get usage statistics (optionally filtered by group)
      */
     async getStats(apiKeyId: number, groupName?: string) {
         const scope = await getApiKeyScope(apiKeyId);
@@ -220,7 +220,7 @@ export const poolService = {
 
         const emailWhere = applyScopeToEmailWhere({ status: 'ACTIVE' }, scope, groupId);
 
-        // 获取该分组中的邮箱 ID 集合
+        // Get the set of email IDs in this group
         const emailIds = (await prisma.emailAccount.findMany({
             where: emailWhere,
             select: { id: true },
@@ -242,7 +242,7 @@ export const poolService = {
     },
 
     /**
-     * 重置使用记录（可按分组过滤）
+     * Reset usage records (optionally filtered by group)
      */
     async reset(apiKeyId: number, groupName?: string) {
         const scope = await getApiKeyScope(apiKeyId);
@@ -258,7 +258,7 @@ export const poolService = {
         }
 
         if (groupId !== undefined) {
-            // 仅重置该分组的邮箱使用记录
+            // Only reset email usage records for this group
             await prisma.emailUsage.deleteMany({
                 where: {
                     apiKeyId,
@@ -278,7 +278,7 @@ export const poolService = {
     },
 
     /**
-     * 获取所有邮箱及其使用状态 (Admin 用)
+     * Get all emails with their usage status (admin use)
      */
     async getEmailsWithUsage(apiKeyId: number, groupId?: number) {
         const scope = await getApiKeyScope(apiKeyId);
@@ -308,7 +308,7 @@ export const poolService = {
     },
 
     /**
-     * 更新邮箱使用状态 (Admin 用)
+     * Update email usage status (admin use)
      */
     async updateEmailUsage(apiKeyId: number, emailIds: number[], groupId?: number) {
         return prisma.$transaction(async (tx) => {

@@ -37,7 +37,7 @@ function toNullableJsonIds(
 
 export const apiKeyService = {
     /**
-     * 获取 API Key 列表
+     * Get API Key list
      */
     async list(input: ListApiKeyInput) {
         const { page, pageSize, status, keyword } = input;
@@ -76,7 +76,7 @@ export const apiKeyService = {
             prisma.apiKey.count({ where }),
         ]);
 
-        // 转换 BigInt
+        // Convert BigInt
         const formattedList = list.map((item: typeof list[number]) => ({
             ...item,
             usageCount: Number(item.usageCount),
@@ -87,7 +87,7 @@ export const apiKeyService = {
     },
 
     /**
-     * 创建 API Key
+     * Create API Key
      */
     async create(input: CreateApiKeyInput, createdBy: number) {
         const { name, rateLimit, expiresAt, permissions } = input;
@@ -109,7 +109,7 @@ export const apiKeyService = {
             }
         }
 
-        // 生成 API Key
+        // Generate API Key
         const { key, prefix, hash } = generateApiKey();
 
         const apiKey = await prisma.apiKey.create({
@@ -137,7 +137,7 @@ export const apiKeyService = {
             },
         });
 
-        // 返回完整 key（只在创建时返回）
+        // Return the full key (only available at creation time)
         return {
             ...apiKey,
             allowedGroupIds: parseJsonIdList(apiKey.allowedGroupIds),
@@ -147,7 +147,7 @@ export const apiKeyService = {
     },
 
     /**
-     * 获取 API Key 详情
+     * Get API Key details
      */
     async getById(id: number) {
         const apiKey = await prisma.apiKey.findUnique({
@@ -186,7 +186,7 @@ export const apiKeyService = {
     },
 
     /**
-     * 更新 API Key
+     * Update API Key
      */
     async update(id: number, input: UpdateApiKeyInput) {
         const exists = await prisma.apiKey.findUnique({ where: { id } });
@@ -250,7 +250,7 @@ export const apiKeyService = {
     },
 
     /**
-     * 删除 API Key
+     * Delete API Key
      */
     async delete(id: number) {
         const exists = await prisma.apiKey.findUnique({ where: { id } });
@@ -263,7 +263,7 @@ export const apiKeyService = {
     },
 
     /**
-     * 获取 API Key 使用统计
+     * Get API Key usage statistics
      */
     async getUsageStats(id: number) {
         const apiKey = await prisma.apiKey.findUnique({

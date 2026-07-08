@@ -108,12 +108,12 @@ const defaultSystemConfigCreate = {
     tokenRefreshConcurrency: env.TOKEN_REFRESH_CONCURRENCY,
 };
 
-// 模块级运行态
+// Module-level running state
 let isRunning = false;
 let currentRun: CurrentRefreshRun | null = null;
 
 /**
- * 并发控制工具：限制同时执行的 Promise 数量
+ * Concurrency control utility: limits the number of simultaneously running promises
  */
 async function runWithConcurrency<T>(
     items: T[],
@@ -316,7 +316,7 @@ export const tokenRefreshService = {
     },
 
     /**
-     * 刷新单个邮箱的 Refresh Token
+     * Refresh a single email's refresh token
      */
     async refreshSingleToken(emailId: number): Promise<RefreshResult> {
         const account = await prisma.emailAccount.findUnique({
@@ -343,7 +343,7 @@ export const tokenRefreshService = {
         try {
             currentRefreshToken = decrypt(account.refreshToken);
         } catch {
-            logger.error({ emailId, email: account.email }, '解密 refresh token 失败');
+            logger.error({ emailId, email: account.email }, 'Failed to decrypt refresh token');
             await prisma.emailAccount.update({
                 where: { id: emailId },
                 data: getFailureUpdateData(account.errorMessage, 'Failed to decrypt refresh token'),
@@ -377,7 +377,7 @@ export const tokenRefreshService = {
                     errorMsg = errorText.substring(0, 200);
                 }
 
-                logger.warn({ email: account.email, emailId, status: response.status }, `Token 刷新失败: ${errorMsg}`);
+                logger.warn({ email: account.email, emailId, status: response.status }, `Token refresh failed: ${errorMsg}`);
                 await prisma.emailAccount.update({
                     where: { id: emailId },
                     data: getFailureUpdateData(account.errorMessage, errorMsg),
@@ -389,7 +389,7 @@ export const tokenRefreshService = {
 
             if (!data.refresh_token) {
                 const msg = 'No refresh_token in response';
-                logger.warn({ email: account.email, emailId }, '响应中缺少 refresh_token');
+                logger.warn({ email: account.email, emailId }, 'Response missing refresh_token');
                 await prisma.emailAccount.update({
                     where: { id: emailId },
                     data: getFailureUpdateData(account.errorMessage, msg),
@@ -407,11 +407,11 @@ export const tokenRefreshService = {
                 },
             });
 
-            logger.info({ email: account.email, emailId }, 'Token 刷新成功');
+            logger.info({ email: account.email, emailId }, 'Token refresh succeeded');
             return { emailId, email: account.email, success: true, message: 'OK' };
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : 'Unknown error';
-            logger.error({ err, email: account.email, emailId }, 'Token 刷新异常');
+            logger.error({ err, email: account.email, emailId }, 'Token refresh exception');
             await prisma.emailAccount.update({
                 where: { id: emailId },
                 data: getFailureUpdateData(account.errorMessage, `Exception: ${message}`),
@@ -421,7 +421,7 @@ export const tokenRefreshService = {
     },
 
     /**
-     * 批量刷新所有未禁用邮箱
+     * Batch refresh all non-disabled emails
      */
     async refreshAll(options?: RefreshAllOptions): Promise<BatchRefreshResult> {
         const trigger = options?.trigger ?? 'MANUAL';
@@ -489,7 +489,7 @@ export const tokenRefreshService = {
                 requestedByUsername,
                 total: accounts.length,
                 concurrency,
-            }, trigger === 'AUTO' ? '自动批量刷新 Token 开始' : '手动批量刷新 Token 开始');
+            }, trigger === 'AUTO' ? 'Auto batch token refresh started' : 'Manual batch token refresh started');
 
             await runWithConcurrency(accounts, concurrency, async (account) => {
                 const result = await this.refreshSingleToken(account.id);
@@ -566,7 +566,7 @@ export const tokenRefreshService = {
                 success: batchResult.success,
                 failed: batchResult.failed,
                 durationMs: batchResult.durationMs,
-            }, trigger === 'AUTO' ? '自动批量刷新 Token 完成' : '手动批量刷新 Token 完成');
+            }, trigger === 'AUTO' ? 'Auto batch token refresh completed' : 'Manual batch token refresh completed');
 
             return batchResult;
         } catch (err) {
@@ -578,7 +578,7 @@ export const tokenRefreshService = {
                 groupId,
                 requestedById,
                 requestedByUsername,
-            }, trigger === 'AUTO' ? '自动批量刷新 Token 失败' : '手动批量刷新 Token 失败');
+            }, trigger === 'AUTO' ? 'Auto batch token refresh failed' : 'Manual batch token refresh failed');
             throw err;
         } finally {
             isRunning = false;

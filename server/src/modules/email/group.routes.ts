@@ -3,23 +3,23 @@ import { groupService } from './group.service.js';
 import { createGroupSchema, updateGroupSchema, assignEmailsSchema } from './group.schema.js';
 
 const groupRoutes: FastifyPluginAsync = async (fastify) => {
-    // 所有路由需要管理员认证
+    // All routes require admin authentication
     fastify.addHook('preHandler', fastify.authenticateJwt);
 
-    // 获取分组列表
+    // Get group list
     fastify.get('/', async () => {
         const groups = await groupService.list();
         return { success: true, data: groups };
     });
 
-    // 获取分组详情
+    // Get group details
     fastify.get<{ Params: { id: string } }>('/:id', async (request) => {
         const id = parseInt(request.params.id, 10);
         const group = await groupService.getById(id);
         return { success: true, data: group };
     });
 
-    // 创建分组
+    // Create group
     fastify.post('/', async (request) => {
         const input = createGroupSchema.parse(request.body);
         const group = await groupService.create(input);
@@ -30,11 +30,11 @@ const groupRoutes: FastifyPluginAsync = async (fastify) => {
             actorUsername: request.user?.username ?? null,
             groupId: group.id,
             name: group.name,
-        }, '新增邮箱分组');
+        }, 'Email group created');
         return { success: true, data: group };
     });
 
-    // 更新分组
+    // Update group
     fastify.put<{ Params: { id: string } }>('/:id', async (request) => {
         const id = parseInt(request.params.id, 10);
         const input = updateGroupSchema.parse(request.body);
@@ -46,11 +46,11 @@ const groupRoutes: FastifyPluginAsync = async (fastify) => {
             actorUsername: request.user?.username ?? null,
             groupId: group.id,
             name: group.name,
-        }, '修改邮箱分组');
+        }, 'Email group updated');
         return { success: true, data: group };
     });
 
-    // 删除分组
+    // Delete group
     fastify.delete<{ Params: { id: string } }>('/:id', async (request) => {
         const id = parseInt(request.params.id, 10);
         const result = await groupService.delete(id);
@@ -60,11 +60,11 @@ const groupRoutes: FastifyPluginAsync = async (fastify) => {
             actorId: request.user?.id ?? null,
             actorUsername: request.user?.username ?? null,
             groupId: id,
-        }, '删除邮箱分组');
+        }, 'Email group deleted');
         return { success: true, data: result };
     });
 
-    // 分配邮箱到分组
+    // Assign emails to group
     fastify.post<{ Params: { id: string } }>('/:id/assign', async (request) => {
         const id = parseInt(request.params.id, 10);
         const input = assignEmailsSchema.parse(request.body);
@@ -77,11 +77,11 @@ const groupRoutes: FastifyPluginAsync = async (fastify) => {
             groupId: id,
             emailIds: input.emailIds,
             updatedCount: result.count,
-        }, '分配邮箱到分组');
+        }, 'Emails assigned to group');
         return { success: true, data: result };
     });
 
-    // 从分组移除邮箱
+    // Remove emails from group
     fastify.post<{ Params: { id: string } }>('/:id/remove', async (request) => {
         const id = parseInt(request.params.id, 10);
         const input = assignEmailsSchema.parse(request.body);
@@ -94,7 +94,7 @@ const groupRoutes: FastifyPluginAsync = async (fastify) => {
             groupId: id,
             emailIds: input.emailIds,
             updatedCount: result.count,
-        }, '从分组移除邮箱');
+        }, 'Emails removed from group');
         return { success: true, data: result };
     });
 };

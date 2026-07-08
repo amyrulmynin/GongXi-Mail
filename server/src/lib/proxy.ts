@@ -16,7 +16,7 @@ type ProxyFetchOptions = Omit<RequestInit, 'dispatcher'> & {
 };
 
 /**
- * 创建 SOCKS5 代理 Agent
+ * Create a SOCKS5 proxy agent
  */
 export function createSocksAgent(socks5: string): SocksProxyAgent | null {
     if (!socks5 || typeof socks5 !== 'string') {
@@ -46,7 +46,7 @@ export function createSocksAgent(socks5: string): SocksProxyAgent | null {
 }
 
 /**
- * 创建 HTTP 代理 Agent
+ * Create an HTTP proxy agent
  */
 export function createHttpAgent(http: string): ProxyAgent | null {
     if (!http) {
@@ -64,10 +64,10 @@ export function createHttpAgent(http: string): ProxyAgent | null {
 }
 
 /**
- * 自动选择代理
+ * Automatically select a proxy
  */
 export function autoProxy(socks5?: string, http?: string): ProxyOptions {
-    // SOCKS5 代理优先
+    // Prefer SOCKS5 proxy
     if (socks5) {
         const agent = createSocksAgent(socks5);
         if (agent) {
@@ -79,7 +79,7 @@ export function autoProxy(socks5?: string, http?: string): ProxyOptions {
         }
     }
 
-    // HTTP 代理
+    // HTTP proxy
     if (http) {
         const dispatcher = createHttpAgent(http);
         if (dispatcher) {
@@ -91,7 +91,7 @@ export function autoProxy(socks5?: string, http?: string): ProxyOptions {
         }
     }
 
-    // 无代理
+    // No proxy
     return {
         fetch: undiciFetch as unknown as typeof fetch,
         type: 'none',
@@ -99,7 +99,7 @@ export function autoProxy(socks5?: string, http?: string): ProxyOptions {
 }
 
 /**
- * 使用代理发起请求
+ * Make a request through a proxy
  */
 export async function proxyFetch(
     url: string,

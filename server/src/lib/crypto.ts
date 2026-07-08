@@ -7,14 +7,14 @@ const IV_LENGTH = 16;
 const SALT_ROUNDS = 10;
 
 /**
- * 生成加密密钥（从环境变量派生）
+ * Derive the encryption key from the environment variable
  */
 function getEncryptionKey(): Buffer {
     return createHash('sha256').update(env.ENCRYPTION_KEY).digest();
 }
 
 /**
- * AES-256-GCM 加密
+ * AES-256-GCM encrypt
  */
 export function encrypt(text: string): string {
     const iv = randomBytes(IV_LENGTH);
@@ -26,12 +26,12 @@ export function encrypt(text: string): string {
 
     const authTag = cipher.getAuthTag();
 
-    // 格式: iv:authTag:encrypted
+    // Format: iv:authTag:encrypted
     return `${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted}`;
 }
 
 /**
- * AES-256-GCM 解密
+ * AES-256-GCM decrypt
  */
 export function decrypt(encryptedText: string): string {
     const parts = encryptedText.split(':');
@@ -54,21 +54,21 @@ export function decrypt(encryptedText: string): string {
 }
 
 /**
- * 密码哈希
+ * Hash a password
  */
 export async function hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, SALT_ROUNDS);
 }
 
 /**
- * 验证密码
+ * Verify a password
  */
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
     return bcrypt.compare(password, hash);
 }
 
 /**
- * 生成 API Key
+ * Generate an API Key
  */
 export function generateApiKey(): { key: string; prefix: string; hash: string } {
     const randomPart = randomBytes(24).toString('base64url');
@@ -80,7 +80,7 @@ export function generateApiKey(): { key: string; prefix: string; hash: string } 
 }
 
 /**
- * 哈希 API Key（用于验证）
+ * Hash an API Key (used for validation)
  */
 export function hashApiKey(key: string): string {
     return createHash('sha256').update(key).digest('hex');

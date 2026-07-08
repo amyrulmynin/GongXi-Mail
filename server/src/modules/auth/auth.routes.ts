@@ -3,12 +3,12 @@ import { authService } from './auth.service.js';
 import { loginSchema, changePasswordSchema, verify2FaSchema, disable2FaSchema } from './auth.schema.js';
 
 const authRoutes: FastifyPluginAsync = async (fastify) => {
-    // 登录
+    // Login
     fastify.post('/login', async (request, reply) => {
         const input = loginSchema.parse(request.body);
         const result = await authService.login(input, request.ip);
 
-        // 设置 Cookie
+        // Set cookie
         reply.cookie('token', result.token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -19,13 +19,13 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         return { success: true, data: result };
     });
 
-    // 登出
+    // Logout
     fastify.post('/logout', async (request, reply) => {
         reply.clearCookie('token');
         return { success: true, data: { message: 'Logged out' } };
     });
 
-    // 获取当前用户
+    // Get current user
     fastify.get('/me', {
         preHandler: [fastify.authenticateJwt],
     }, async (request, _reply) => {
@@ -33,7 +33,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         return { success: true, data: admin };
     });
 
-    // 修改密码
+    // Change password
     fastify.post('/change-password', {
         preHandler: [fastify.authenticateJwt],
     }, async (request, _reply) => {
@@ -44,11 +44,11 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
             action: 'auth.change_password',
             actorId: request.user?.id ?? null,
             actorUsername: request.user?.username ?? null,
-        }, '修改管理员密码');
+        }, 'Admin password changed');
         return { success: true, data: { message: 'Password changed' } };
     });
 
-    // 2FA 状态
+    // 2FA status
     fastify.get('/2fa/status', {
         preHandler: [fastify.authenticateJwt],
     }, async (request) => {
@@ -56,7 +56,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         return { success: true, data: result };
     });
 
-    // 生成 2FA 绑定信息
+    // Generate 2FA binding info
     fastify.post('/2fa/setup', {
         preHandler: [fastify.authenticateJwt],
     }, async (request) => {
@@ -64,7 +64,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         return { success: true, data: result };
     });
 
-    // 启用 2FA
+    // Enable 2FA
     fastify.post('/2fa/enable', {
         preHandler: [fastify.authenticateJwt],
     }, async (request) => {
@@ -75,11 +75,11 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
             action: 'auth.2fa_enable',
             actorId: request.user?.id ?? null,
             actorUsername: request.user?.username ?? null,
-        }, '启用管理员二次验证');
+        }, 'Admin 2FA enabled');
         return { success: true, data: result };
     });
 
-    // 禁用 2FA
+    // Disable 2FA
     fastify.post('/2fa/disable', {
         preHandler: [fastify.authenticateJwt],
     }, async (request) => {
@@ -90,7 +90,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
             action: 'auth.2fa_disable',
             actorId: request.user?.id ?? null,
             actorUsername: request.user?.username ?? null,
-        }, '禁用管理员二次验证');
+        }, 'Admin 2FA disabled');
         return { success: true, data: result };
     });
 };

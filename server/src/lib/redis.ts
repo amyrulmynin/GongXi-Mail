@@ -35,7 +35,7 @@ export async function closeRedis(): Promise<void> {
 }
 
 /**
- * 缓存设置
+ * Set a cache entry
  */
 export async function setCache(key: string, value: string, expireSeconds: number = 60): Promise<boolean> {
     const client = getRedis();
@@ -54,7 +54,7 @@ export async function setCache(key: string, value: string, expireSeconds: number
 }
 
 /**
- * 缓存获取
+ * Get a cache entry
  */
 export async function getCache(key: string): Promise<string | null> {
     const client = getRedis();

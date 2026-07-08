@@ -57,7 +57,7 @@ const AdminsPage: React.FC = () => {
         setLoading(true);
         const result = await requestData<AdminListResult>(
             () => adminApi.getList({ page, pageSize }),
-            '获取数据失败'
+            'Failed to fetch data'
         );
         if (result) {
             setData(result.list);
@@ -98,13 +98,13 @@ const AdminsPage: React.FC = () => {
         try {
             const res = await adminApi.delete(id);
             if (res.code === 200) {
-                message.success('删除成功');
+                message.success('Deleted successfully');
                 fetchData();
             } else {
                 message.error(res.message);
             }
         } catch (err: unknown) {
-            message.error(getErrorMessage(err, '删除失败'));
+            message.error(getErrorMessage(err, 'Delete failed'));
         }
     };
 
@@ -113,13 +113,13 @@ const AdminsPage: React.FC = () => {
             const values = await form.validateFields();
 
             if (editingId) {
-                // 如果密码为空，不更新密码
+                // If password is empty, do not update it
                 if (!values.password) {
                     delete values.password;
                 }
                 const res = await adminApi.update(editingId, values);
                 if (res.code === 200) {
-                    message.success('更新成功');
+                    message.success('Updated successfully');
                     setModalVisible(false);
                     fetchData();
                 } else {
@@ -128,7 +128,7 @@ const AdminsPage: React.FC = () => {
             } else {
                 const res = await adminApi.create(values);
                 if (res.code === 200) {
-                    message.success('创建成功');
+                    message.success('Created successfully');
                     setModalVisible(false);
                     fetchData();
                 } else {
@@ -136,24 +136,24 @@ const AdminsPage: React.FC = () => {
                 }
             }
         } catch (err: unknown) {
-            message.error(getErrorMessage(err, '保存失败'));
+            message.error(getErrorMessage(err, 'Save failed'));
         }
     };
 
     const columns: ColumnsType<Admin> = [
         {
-            title: '用户名',
+            title: 'Username',
             dataIndex: 'username',
             key: 'username',
         },
         {
-            title: '邮箱',
+            title: 'Email',
             dataIndex: 'email',
             key: 'email',
             render: (val) => val || '-',
         },
         {
-            title: '角色',
+            title: 'Role',
             dataIndex: 'role',
             key: 'role',
             render: (role) => (
@@ -163,7 +163,7 @@ const AdminsPage: React.FC = () => {
             ),
         },
         {
-            title: '状态',
+            title: 'Status',
             dataIndex: 'status',
             key: 'status',
             render: (status) => (
@@ -178,17 +178,17 @@ const AdminsPage: React.FC = () => {
             key: 'twoFactorEnabled',
             render: (enabled: boolean) => (
                 <Tag color={enabled ? 'green' : 'default'}>
-                    {enabled ? '已启用' : '未启用'}
+                    {enabled ? 'Enabled' : 'Disabled'}
                 </Tag>
             ),
         },
         {
-            title: '最后登录',
+            title: 'Last Login',
             dataIndex: 'lastLoginAt',
             key: 'lastLoginAt',
             render: (val, record) =>
                 val ? (
-                    <Tooltip title={`IP: ${record.lastLoginIp || '未知'}`}>
+                    <Tooltip title={`IP: ${record.lastLoginIp || 'Unknown'}`}>
                         {dayjs(val).format('YYYY-MM-DD HH:mm')}
                     </Tooltip>
                 ) : (
@@ -196,18 +196,18 @@ const AdminsPage: React.FC = () => {
                 ),
         },
         {
-            title: '创建时间',
+            title: 'Created At',
             dataIndex: 'createdAt',
             key: 'createdAt',
             render: (val) => dayjs(val).format('YYYY-MM-DD HH:mm'),
         },
         {
-            title: '操作',
+            title: 'Actions',
             key: 'action',
             width: 120,
             render: (_, record) => (
                 <Space>
-                    <Tooltip title="编辑">
+                    <Tooltip title="Edit">
                         <Button
                             type="text"
                             icon={<EditOutlined />}
@@ -215,9 +215,9 @@ const AdminsPage: React.FC = () => {
                         />
                     </Tooltip>
                     {record.id !== currentAdmin?.id && (
-                        <Tooltip title="删除">
+                        <Tooltip title="Delete">
                             <Popconfirm
-                                title="确定要删除此管理员吗？"
+                                title="Are you sure you want to delete this admin?"
                                 onConfirm={() => handleDelete(record.id)}
                             >
                                 <Button type="text" danger icon={<DeleteOutlined />} />
@@ -233,10 +233,10 @@ const AdminsPage: React.FC = () => {
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
                 <Title level={4} style={{ margin: 0 }}>
-                    管理员管理
+                    Admin Management
                 </Title>
                 <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-                    添加管理员
+                    Add Admin
                 </Button>
             </div>
 
@@ -250,7 +250,7 @@ const AdminsPage: React.FC = () => {
                     pageSize,
                     total,
                     showSizeChanger: true,
-                    showTotal: (total) => `共 ${total} 条`,
+                    showTotal: (total) => `Total ${total} items`,
                     onChange: (p, ps) => {
                         setPage(p);
                         setPageSize(ps);
@@ -259,7 +259,7 @@ const AdminsPage: React.FC = () => {
             />
 
             <Modal
-                title={editingId ? '编辑管理员' : '添加管理员'}
+                title={editingId ? 'Edit Admin' : 'Add Admin'}
                 open={modalVisible}
                 onOk={handleSubmit}
                 onCancel={() => setModalVisible(false)}
@@ -267,54 +267,54 @@ const AdminsPage: React.FC = () => {
                 <Form form={form} layout="vertical">
                     <Form.Item
                         name="username"
-                        label="用户名"
+                        label="Username"
                         rules={[
-                            { required: true, message: '请输入用户名' },
-                            { min: 3, message: '用户名至少 3 个字符' },
+                            { required: true, message: 'Please enter username' },
+                            { min: 3, message: 'Username must be at least 3 characters' },
                         ]}
                     >
-                        <Input placeholder="请输入用户名" />
+                        <Input placeholder="Enter username" />
                     </Form.Item>
                     <Form.Item
                         name="password"
-                        label="密码"
+                        label="Password"
                         rules={
                             editingId
                                 ? []
                                 : [
-                                    { required: true, message: '请输入密码' },
-                                    { min: 6, message: '密码至少 6 个字符' },
+                                    { required: true, message: 'Please enter password' },
+                                    { min: 6, message: 'Password must be at least 6 characters' },
                                 ]
                         }
                     >
                         <Input.Password
-                            placeholder={editingId ? '留空则不修改密码' : '请输入密码'}
+                            placeholder={editingId ? 'Leave empty to keep current password' : 'Enter password'}
                         />
                     </Form.Item>
-                    <Form.Item name="email" label="邮箱">
-                        <Input placeholder="可选" type="email" />
+                    <Form.Item name="email" label="Email">
+                        <Input placeholder="Optional" type="email" />
                     </Form.Item>
-                    <Form.Item name="role" label="角色" initialValue="ADMIN">
+                    <Form.Item name="role" label="Role" initialValue="ADMIN">
                         <Select>
-                            <Select.Option value="ADMIN">管理员</Select.Option>
-                            <Select.Option value="SUPER_ADMIN">超级管理员</Select.Option>
+                            <Select.Option value="ADMIN">Admin</Select.Option>
+                            <Select.Option value="SUPER_ADMIN">Super Admin</Select.Option>
                         </Select>
                     </Form.Item>
-                    <Form.Item name="status" label="状态" initialValue="ACTIVE">
+                    <Form.Item name="status" label="Status" initialValue="ACTIVE">
                         <Select>
-                            <Select.Option value="ACTIVE">启用</Select.Option>
-                            <Select.Option value="DISABLED">禁用</Select.Option>
+                            <Select.Option value="ACTIVE">Enabled</Select.Option>
+                            <Select.Option value="DISABLED">Disabled</Select.Option>
                         </Select>
                     </Form.Item>
                     {editingId && (
                         <Form.Item
                             name="twoFactorEnabled"
-                            label="二次验证（2FA）"
-                            extra={!editingTwoFactorEnabled ? '启用 2FA 需管理员本人在“设置”页完成绑定' : undefined}
+                            label="Two-Factor Auth (2FA)"
+                            extra={!editingTwoFactorEnabled ? 'To enable 2FA, the admin must complete binding in Settings' : undefined}
                         >
                             <Select>
-                                <Select.Option value={true} disabled={!editingTwoFactorEnabled}>已启用</Select.Option>
-                                <Select.Option value={false}>未启用</Select.Option>
+                                <Select.Option value={true} disabled={!editingTwoFactorEnabled}>Enabled</Select.Option>
+                                <Select.Option value={false}>Disabled</Select.Option>
                             </Select>
                         </Form.Item>
                     )}
