@@ -27,6 +27,9 @@ RUN cd web && npm run build
 # Production stage
 FROM node:20-alpine
 
+# Install runtime dependencies (openssl for Prisma, wget for healthcheck)
+RUN apk add --no-cache openssl wget
+
 WORKDIR /app
 
 # Copy server
@@ -41,7 +44,7 @@ COPY --from=builder /app/web/dist ./public
 # Set working directory to server
 WORKDIR /app/server
 
+EXPOSE 3000
+
 # Run database migrations and start server
 CMD ["sh", "-c", "npx prisma db push --skip-generate && node dist/index.js"]
-
-EXPOSE 3000
